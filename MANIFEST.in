@@ -1,0 +1,4 @@
+include README.rst
+include LICENSE
+include requirements.txt
+recursive-include ckanext/dcor_depot *.html *.json *.js *.less *.css *.mo *.txt

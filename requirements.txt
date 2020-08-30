@@ -1,0 +1,4 @@
+dclab>=0.22.3
+dcor_shared>=0.2.0
+html2text==2019.8.11
+requests
