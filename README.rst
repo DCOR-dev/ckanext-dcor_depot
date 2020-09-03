@@ -29,3 +29,17 @@ This plugin implements:
      ckan -c /etc/ckan/default/ckan.ini import-figshare
 
 Please make sure that the necessary file permissions are given in ``/data``. 
+
+
+Installation
+------------
+
+::
+
+    pip install ckanext-dcor_depot
+
+
+Add this extension to the plugins and defaul_views in ckan.ini:
+```
+ckan.plugins = [...] dcor_depot
+```
