@@ -43,6 +43,8 @@ Add this extension to the plugins and defaul_views in ckan.ini:
 
 ```
 ckan.plugins = [...] dcor_depot
+ckan.dcor_depot_path = /data/depots
+ckan.dcor_user_depot_name = users-HOSTNAME
 ```
 
 This plugin stores resources to `/data`:
