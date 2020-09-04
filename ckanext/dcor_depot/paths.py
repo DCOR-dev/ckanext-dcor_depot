@@ -1,11 +1,19 @@
 import os
 import socket
 
+from ckan.common import config
+
 hostname = socket.gethostname()
 
-#: CKAN resources location (contains the hostname, starts with
-#: ``ckan.storage_path`` from the CKAN configuration file)
-CKAN_RESOURCES = "/data/ckan-{}/resources".format(hostname)
+#: CKAN storage path (contains resources, uploaded group, user or organization
+#: images)
+CKAN_STORAGE = config.get('ckan.storage_path').rstrip("/")
+
+#: CKAN resources location; This location will only contain symlinks to
+#: the actual resources located in `USER_DEPOT`. However, ancillary
+#: data such as preview images or condensed datasets are still stored here
+#: (alongside the symlink).
+CKAN_RESOURCES = CKAN_STORAGE + "/resources"
 
 #: Figshare data location on the backed-up block device
 FIGSHARE_DEPOT = "/data/depots/figshare"
