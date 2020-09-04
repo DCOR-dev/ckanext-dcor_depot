@@ -10,10 +10,10 @@ import tempfile
 from ckan import logic
 
 import dclab
-
+from dcor_shared import get_resource_path
 
 from .orgs import INTERNAL_ORG
-from .paths import INTERNAL_DEPOT, get_resource_path
+from .paths import INTERNAL_DEPOT
 from .depot import DUMMY_BYTES, make_id
 
 

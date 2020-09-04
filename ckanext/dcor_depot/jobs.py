@@ -1,11 +1,14 @@
 import pathlib
 
+from dcor_shared import get_resource_path
+
 from .orgs import MANUAL_DEPOT_ORGS
 from .paths import USER_DEPOT
 
 
-def symlink_user_dataset(path, pkg, usr, resource):
+def symlink_user_dataset(pkg, usr, resource):
     """Symlink resource data to human-readable depot"""
+    path = pathlib.Path(get_resource_path(resource["id"]))
     org = pkg["organization"]["name"]
     if org in MANUAL_DEPOT_ORGS:
         # nothing to do (skip, because already symlinked)

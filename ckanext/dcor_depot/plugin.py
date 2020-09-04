@@ -1,8 +1,6 @@
 import ckan.plugins as p
 import ckan.plugins.toolkit as toolkit
 
-from dcor_shared import get_dataset_path
-
 from .cli import get_commands
 from .jobs import symlink_user_dataset
 
@@ -24,8 +22,7 @@ class DCORDepotPlugin(p.SingletonPlugin):
         usr_id = pkg["creator_user_id"]
         usr = toolkit.get_action('user_show')(context, {'id': usr_id})
         # resource path
-        path = get_dataset_path(context, resource)
         toolkit.enqueue_job(symlink_user_dataset,
-                            [path, pkg, usr, resource],
-                            title="Create resource preview image",
+                            [pkg, usr, resource],
+                            title="Move and symlink user dataset",
                             rq_kwargs={"timeout": 60})

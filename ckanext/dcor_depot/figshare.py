@@ -9,11 +9,13 @@ import time
 import tempfile
 
 from ckan import logic
+
+from dcor_shared import get_resource_path
 from html2text import html2text
 import requests
 
 from .orgs import FIGSHARE_ORG
-from .paths import FIGSHARE_DEPOT, get_resource_path
+from .paths import FIGSHARE_DEPOT
 from .depot import DUMMY_BYTES, make_id, sha_256
 
 FIGSHARE_BASE = "https://api.figshare.com/v2"

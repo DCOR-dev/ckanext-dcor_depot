@@ -1,18 +1,16 @@
-import os
-
 from ckan.common import config
 
 #: CKAN storage path (contains resources, uploaded group, user or organization
 #: images)
-CKAN_STORAGE = config.get('ckan.storage_path').rstrip("/")
+CKAN_STORAGE = config.get('ckan.storage_path', "").rstrip("/")
 
 #: This is where DCOR keeps all relevant resource data
-DEPOT_STORAGE = config.get('ckan.dcor_depot_path').rstrip("/")
+DEPOT_STORAGE = config.get('ckan.dcor_depot_path', "").rstrip("/")
 if not DEPOT_STORAGE:
     raise ValueError("Please set 'ckan.dcor_depot_path' in ckan.ini!")
 
 #: Name of the USER_DEPOT
-USER_DEPOT_NAME = config.get('ckan.dcor_user_depot_name').rstrip("/")
+USER_DEPOT_NAME = config.get('ckan.dcor_user_depot_name', "").rstrip("/")
 if not DEPOT_STORAGE:
     raise ValueError("Please set 'ckan.dcor_user_depot_name' in ckan.ini!")
 
@@ -32,16 +30,3 @@ INTERNAL_DEPOT = DEPOT_STORAGE + "/internal"
 #: Resources itemized by user (contains the hostname)
 USER_DEPOT = DEPOT_STORAGE + "/" + USER_DEPOT_NAME
 
-
-def get_resource_path(rid, create_dirs=False):
-    pdir = "{}/{}/{}".format(CKAN_RESOURCES, rid[:3], rid[3:6])
-    path = "{}/{}".format(pdir, rid[6:])
-    if create_dirs:
-        try:
-            os.makedirs(pdir)
-        except OSError:
-            pass
-    os.chown(pdir,
-             os.stat(CKAN_RESOURCES).st_uid,
-             os.stat(CKAN_RESOURCES).st_gid)
-    return path
