@@ -1,9 +1,12 @@
 """Import predefined datasets from figshare.com"""
 import cgi
+import grp
 import hashlib
 import mimetypes
 import os
+import pathlib
 import pkg_resources
+import pwd
 import shutil
 import time
 import tempfile
@@ -27,7 +30,7 @@ def admin_context():
 
 def check_md5(path, md5sum, block_size=2**20):
     file_hash = hashlib.md5()
-    with open(path, "rb") as fd:
+    with path.open("rb") as fd:
         while True:
             data = fd.read(block_size)
             if not data:
@@ -108,10 +111,8 @@ def import_dataset(doi):
         print("Skipping creation of {} (exists)".format(dcor_dict["name"]))
 
     # Download/Import the resources
-    dldir = os.path.join(FIGSHARE_DEPOT, dcor_dict["name"])
-    for adir in [FIGSHARE_DEPOT, dldir]:
-        if not os.path.exists(adir):
-            os.makedirs(adir)
+    dldir = pathlib.Path(FIGSHARE_DEPOT) / dcor_dict["name"]
+    dldir.mkdir(parents=True, exist_ok=True)
 
     resource_create = logic.get_action("resource_create")
     for res in figshare_dict["files"]:
@@ -124,8 +125,8 @@ def import_dataset(doi):
                 print("Resource {} exists.".format(res["name"]))
                 continue
             # Download/Verify resource
-            dlpath = os.path.join(dldir, res["name"])
-            if os.path.exists(dlpath):
+            dlpath = dldir / res["name"]
+            if dlpath.exists():
                 try:
                     check_md5(dlpath, res["supplied_md5"])
                 except ValueError:
@@ -138,11 +139,11 @@ def import_dataset(doi):
             check_md5(dlpath, res["supplied_md5"])
 
             # use dummy file (workaround for MemoryError during upload)
-            tmp = tempfile.mkdtemp(prefix="dummy_")
-            upath = os.path.join(tmp, res["name"])
-            with open(upath, "wb") as fd:
+            tmp = pathlib.Path(tempfile.mkdtemp(prefix="dummy_"))
+            upath = tmp / res["name"]
+            with upath.open("wb") as fd:
                 fd.write(DUMMY_BYTES)
-            with open(upath, "rb") as fd:
+            with upath.open("rb") as fd:
                 # This is a kind of hacky way of tricking CKAN into thinking
                 # that there is a file upload.
                 upload = cgi.FieldStorage()
@@ -157,15 +158,20 @@ def import_dataset(doi):
                         "upload": upload,
                         "name": res["name"],
                         "sha256": sha_256(dlpath),
-                        "size": os.stat(dlpath).st_size,
+                        "size": dlpath.stat().st_size,
                         "format": mimetypes.guess_type(dlpath)[0],
                     }
                 )
             shutil.rmtree(tmp, ignore_errors=True)
             # create file system link to downloaded file
-            rpath = get_resource_path(rs["id"])
-            os.remove(rpath)
-            os.symlink(dlpath, rpath)
+            rpath = pathlib.Path(get_resource_path(rs["id"]))
+            rpath.unlink()
+            rpath.symlink_to(dlpath)
+            # make www-data the owner of the resource
+            www_uid = pwd.getpwnam("www-data").pw_uid
+            www_gid = grp.getgrnam("www-data").gr_gid
+            os.chown(rpath.parent, www_uid, www_gid)
+            os.chown(rpath.parent.parent, www_uid, www_gid)
             # Avoid issues with race conditions
             # - https://github.com/ckan/ckan/issues/5225
             # - https://github.com/ckan/ckan/pull/4618

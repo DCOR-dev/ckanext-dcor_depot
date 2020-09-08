@@ -29,4 +29,3 @@ INTERNAL_DEPOT = DEPOT_STORAGE + "/internal"
 
 #: Resources itemized by user (contains the hostname)
 USER_DEPOT = DEPOT_STORAGE + "/" + USER_DEPOT_NAME
-
