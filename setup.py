@@ -27,10 +27,10 @@ setup(
     package_dir={name: name},
     namespace_packages=['ckanext'],
     install_requires=[
-      # CKAN extensions should not list dependencies here, but in a separate
-      # ``requirements.txt`` file.
-      #
-      # http://docs.ckan.org/en/latest/extensions/best-practices.html#add-third-party-libraries-to-requirements-txt
+        # CKAN extensions should not list dependencies here, but in a separate
+        # ``requirements.txt`` file.
+        #
+        # http://docs.ckan.org/en/latest/extensions/best-practices.html#add-third-party-libraries-to-requirements-txt
     ],
     include_package_data=True,
     # To provide executable scripts, use entry points in preference to the
@@ -53,11 +53,8 @@ setup(
     },
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: GNU Affero General Public License v3 or'\
-        'later (AGPLv3+)',
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
+        'License :: OSI Approved :: GNU Affero General Public License v3 or ' \
+        + 'later (AGPLv3+)',
         'Programming Language :: Python :: 3',
     ],
 

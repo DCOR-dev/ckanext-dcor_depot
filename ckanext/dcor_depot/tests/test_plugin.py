@@ -1,5 +1,5 @@
 """Tests for plugin.py."""
-import ckanext.dcor_import.plugin as plugin
+import ckanext.dcor_depot.plugin as plugin  # noqa: F401
 
 
 def test_plugin():

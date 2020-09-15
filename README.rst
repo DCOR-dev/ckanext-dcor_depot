@@ -41,15 +41,15 @@ Installation
 
 Add this extension to the plugins and defaul_views in ckan.ini:
 
-```
-ckan.plugins = [...] dcor_depot
-ckan.dcor_depot_path = /data/depots
-ckan.dcor_user_depot_name = users-HOSTNAME
-```
+::
+
+    ckan.plugins = [...] dcor_depot
+    ckan.dcor_depot_path = /data/depots
+    ckan.dcor_user_depot_name = users-HOSTNAME
 
 This plugin stores resources to `/data`:
 
-```
-mkdir -p /data/depots/users-$(hostname)
-chown -R www-data /data/depots/users-$(hostname)
-```
+::
+
+    mkdir -p /data/depots/users-$(hostname)
+    chown -R www-data /data/depots/users-$(hostname)
