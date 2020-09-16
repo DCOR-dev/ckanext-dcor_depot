@@ -1,3 +1,6 @@
+import socket
+import warnings
+
 from ckan.common import config
 
 #: CKAN storage path (contains resources, uploaded group, user or organization
@@ -5,14 +8,18 @@ from ckan.common import config
 CKAN_STORAGE = config.get('ckan.storage_path', "").rstrip("/")
 
 #: This is where DCOR keeps all relevant resource data
-DEPOT_STORAGE = config.get('ckan.dcor_depot_path', "").rstrip("/")
+DEPOT_STORAGE = config.get('ckanext.dcor_depot.depots_path', "").rstrip("/")
 if not DEPOT_STORAGE:
-    raise ValueError("Please set 'ckan.dcor_depot_path' in ckan.ini!")
+    DEPOT_STORAGE = "/data/depots"
+    warnings.warn("Please set 'ckanext.dcor_depot.depots_path' in ckan.ini!")
 
 #: Name of the USER_DEPOT
-USER_DEPOT_NAME = config.get('ckan.dcor_user_depot_name', "").rstrip("/")
-if not DEPOT_STORAGE:
-    raise ValueError("Please set 'ckan.dcor_user_depot_name' in ckan.ini!")
+USER_DEPOT_NAME = config.get('ckanext.dcor_depot.users_depot_name',
+                             "").rstrip("/")
+if not USER_DEPOT_NAME:
+    USER_DEPOT_NAME = "users-{}".format(socket.gethostname())
+    warnings.warn(
+        "Please set 'ckanext.dcor_depot.users_depot_name' in ckan.ini!")
 
 #: CKAN resources location; This location will only contain symlinks to
 #: the actual resources located in `USER_DEPOT`. However, ancillary

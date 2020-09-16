@@ -13,18 +13,18 @@ files in DCOR:
 This plugin implements:
 
 - Data storage management. All resources uploaded by a user are moved
-  to ``/data/users-HOSTNAME/USERNAME/PACKAGE_NAME/RESOURCE_FILENAME``
+  to ``/data/users-HOSTNAME/USER-ORG/PK/ID/PACKAGE_RESOURCE``
   and symlinks are created in ``/data/ckan-HOSTNAME/resources/RES/OUR/CEID``.
   CKAN itself will not notice this. The idea is to have a filesystem overview
   about the datasets of each user.
-- Importer datasets from figshare. Existing datasets from figshare are
+- Import datasets from figshare. Existing datasets from figshare are
   downloaded to the ``/data/depots/figshare`` directory and, upon resource
   creation, symlinked there from  ``/data/ckan-HOSTNAME/resources/RES/OUR/CEID``
   (Note that this is an exemption of the data storage management described
   above). When running the following command, the "figshare-import" organization
   is created and the datasets listed in ``figshare_dois.txt`` are added to CKAN:
 
-  .. code::
+  ::
 
      ckan -c /etc/ckan/default/ckan.ini import-figshare
 
@@ -44,8 +44,9 @@ Add this extension to the plugins and defaul_views in ckan.ini:
 ::
 
     ckan.plugins = [...] dcor_depot
-    ckan.dcor_depot_path = /data/depots
-    ckan.dcor_user_depot_name = users-HOSTNAME
+    ckan.storage_path=/data/ckan-HOSTNAME
+    ckanext.dcor_depot.depots_path=/data/depots
+    ckanext.dcor_depot.users_depot_name=users-HOSTNAME
 
 This plugin stores resources to `/data`:
 

@@ -1,2 +1,4 @@
+0.7.1
+ - use unique configuration keys in ckan.ini
 0.7.0
  - initial open-sourced version
