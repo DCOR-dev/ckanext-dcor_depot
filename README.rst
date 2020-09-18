@@ -13,7 +13,7 @@ files in DCOR:
 This plugin implements:
 
 - Data storage management. All resources uploaded by a user are moved
-  to ``/data/users-HOSTNAME/USER-ORG/PK/ID/PACKAGE_RESOURCE``
+  to ``/data/users-HOSTNAME/USERNAME-ORGNAME/PK/ID/PKGNAME_RESID_RESNAME``
   and symlinks are created in ``/data/ckan-HOSTNAME/resources/RES/OUR/CEID``.
   CKAN itself will not notice this. The idea is to have a filesystem overview
   about the datasets of each user.

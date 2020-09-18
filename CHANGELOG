@@ -1,5 +1,8 @@
 0.7.3
  - enh: add a ``job_id`` for the "symlink" background job
+ - enh: add ckan command "list-all-resources" which prints
+   a list of all resource ids
+ - ref: include resource id in file names in user depot
 0.7.2
  - maintenance release
 0.7.1

@@ -15,11 +15,16 @@ def symlink_user_dataset(pkg, usr, resource):
         return
     user = usr["name"]
     # depot path
-    depot_path = pathlib.Path(USER_DEPOT) / (user + "-" + org) / \
-        pkg["id"][:2] / pkg["id"][2:4] / (pkg["name"] + "_" + resource["name"])
+    depot_path = (pathlib.Path(USER_DEPOT)
+                  / (user + "-" + org)
+                  / pkg["id"][:2]
+                  / pkg["id"][2:4]
+                  / "{}_{}_{}".format(pkg["name"],
+                                      resource["id"],
+                                      resource["name"]))
     if not depot_path.parent.exists():
         depot_path.parent.mkdir(exist_ok=True, parents=True)
-    # move file to depot and creat symlink back
+    # move file to depot and create symlink back
     path = pathlib.Path(path)
     path.rename(depot_path)
     path.symlink_to(depot_path)
