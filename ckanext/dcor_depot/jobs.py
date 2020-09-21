@@ -8,7 +8,7 @@ from .paths import USER_DEPOT
 
 def symlink_user_dataset(pkg, usr, resource):
     """Symlink resource data to human-readable depot"""
-    path = pathlib.Path(get_resource_path(resource["id"]))
+    path = get_resource_path(resource["id"])
     org = pkg["organization"]["name"]
     if org in MANUAL_DEPOT_ORGS:
         # nothing to do (skip, because already symlinked)

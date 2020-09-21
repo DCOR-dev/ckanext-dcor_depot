@@ -164,7 +164,7 @@ def import_dataset(doi):
                 )
             shutil.rmtree(tmp, ignore_errors=True)
             # create file system link to downloaded file
-            rpath = pathlib.Path(get_resource_path(rs["id"]))
+            rpath = get_resource_path(rs["id"])
             rpath.unlink()
             rpath.symlink_to(dlpath)
             # make www-data the owner of the resource

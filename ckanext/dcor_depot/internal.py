@@ -97,7 +97,7 @@ def import_dataset(sha256_path):
     except logic.NotFound:
         # make link to condensed  before importing the resource
         # (to avoid conflicts with automatic generation of condensed file)
-        rmpath = pathlib.Path(get_resource_path(rmid, create_dirs=True))
+        rmpath = get_resource_path(rmid, create_dirs=True)
         # This path should not exist (checked above)
         rmpath_c = rmpath.with_name(rmpath.name + "_condensed.rtdc")
         assert not rmpath_c.exists()
