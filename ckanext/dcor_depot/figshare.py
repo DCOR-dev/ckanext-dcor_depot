@@ -8,7 +8,6 @@ import pathlib
 import pkg_resources
 import pwd
 import shutil
-import time
 import tempfile
 
 from ckan import logic
