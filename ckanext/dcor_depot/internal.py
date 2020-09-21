@@ -47,8 +47,11 @@ def create_internal_org():
 def load_sha256sum(path):
     stem = "_".join(path.name.split("_")[:3])
     sha256path = path.with_name(stem + ".sha256sums")
-    with sha256path.open("r") as fd:
-        sums = fd.read().split("\n")
+    try:
+        sums = sha256path.read_text().split("\n")
+    except UnicodeDecodeError:
+        print("DAMN! Bad character in {}!".format(sha256path))
+        raise
     for line in sums:
         line = line.strip()
         ss, name = line.split("  ")
