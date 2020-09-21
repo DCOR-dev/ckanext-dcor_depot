@@ -28,6 +28,24 @@ This plugin implements:
 
      ckan -c /etc/ckan/default/ckan.ini import-figshare
 
+
+- Import datasets from an internal depot. The depot should be present
+  at ``data/depots/internal/`` and follow the directory structure
+  ``201X/2019-08/20/2019-08-20_1126_c083de*`` where the allowed file names
+  in this case are
+
+  - ``2019-08-20_1126_c083de.sha256sums`` a file containing SHA256 sums
+  - ``2019-08-20_1126_c083de_v1.rtdc`` the actual measurement
+  - ``2019-08-20_1126_c083de_v1_condensed.rtdc`` the condensed dataset
+  - ``2019-08-20_1126_c083de_ad1_m001_bg.png`` an ancillary image
+  - ``2019-08-20_1126_c083de_ad2_m002_bg.png`` another ancillary image
+  - ...
+
+  ::
+
+     ckan -c /etc/ckan/default/ckan.ini import-internal
+
+
 Please make sure that the necessary file permissions are given in ``/data``. 
 
 
