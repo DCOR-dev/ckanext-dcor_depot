@@ -172,10 +172,6 @@ def import_dataset(doi):
             www_gid = grp.getgrnam("www-data").gr_gid
             os.chown(rpath.parent, www_uid, www_gid)
             os.chown(rpath.parent.parent, www_uid, www_gid)
-            # Avoid issues with race conditions
-            # - https://github.com/ckan/ckan/issues/5225
-            # - https://github.com/ckan/ckan/pull/4618
-            time.sleep(1)
     print("Done.")
 
 

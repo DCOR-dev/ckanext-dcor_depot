@@ -1,8 +1,11 @@
 """Import from internal location"""
 import cgi
+import grp
 import json
 import mimetypes
+import os
 import pathlib
+import pwd
 import shutil
 import tempfile
 
@@ -136,7 +139,11 @@ def import_dataset(sha256_path):
             rpath = get_resource_path(rs["id"])
             rpath.unlink()
             rpath.symlink_to(path)
-
+            # make www-data the owner of the resource
+            www_uid = pwd.getpwnam("www-data").pw_uid
+            www_gid = grp.getgrnam("www-data").gr_gid
+            os.chown(rpath.parent, www_uid, www_gid)
+            os.chown(rpath.parent.parent, www_uid, www_gid)
         # cleanup
         shutil.rmtree(tmp, ignore_errors=True)
     else:
