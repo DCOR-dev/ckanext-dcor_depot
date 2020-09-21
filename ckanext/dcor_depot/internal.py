@@ -2,7 +2,6 @@
 import cgi
 import json
 import mimetypes
-import os
 import pathlib
 import shutil
 import tempfile
@@ -29,7 +28,6 @@ def create_internal_org():
     try:
         organization_show(context=admin_context(),
                           data_dict={"id": INTERNAL_ORG})
-
     except logic.NotFound:
         # create user
         data_dict = {
@@ -97,24 +95,24 @@ def import_dataset(sha256_path):
     try:
         resource_show(context=admin_context(), data_dict={"id": rmid})
     except logic.NotFound:
-        tmp = tempfile.mkdtemp(prefix="import_")
-
         # make link to condensed  before importing the resource
         # (to avoid conflicts with automatic generation of condensed file)
-        rmpath = get_resource_path(rmid, create_dirs=True)
-        rmpath_c = rmpath + "_condensed.rtdc"
-        if not os.path.exists(rmpath_c):
-            os.symlink(str(fc), rmpath_c)
+        rmpath = pathlib.Path(get_resource_path(rmid, create_dirs=True))
+        # This path should not exist (checked above)
+        rmpath_c = rmpath.with_name(rmpath.name + "_condensed.rtdc")
+        assert not rmpath_c.exists()
+        rmpath_c.symlink_to(fc)
 
         # import the resources
+        tmp = pathlib.Path(tempfile.mkdtemp(prefix="import_"))
         for path in files:
             print("  - importing {}".format(path))
             # use dummy file (workaround for MemoryError during upload)
-            upath = os.path.join(tmp, path.name)
-            with open(upath, "wb") as fd:
+            upath = tmp / path.name
+            with upath.open("wb") as fd:
                 fd.write(DUMMY_BYTES)
             shasum = load_sha256sum(path)
-            with open(upath, "rb") as fd:
+            with upath.open("rb") as fd:
                 # This is a kind of hacky way of tricking CKAN into thinking
                 # that there is a file upload.
                 upload = cgi.FieldStorage()
@@ -136,8 +134,8 @@ def import_dataset(sha256_path):
                     }
                 )
             rpath = get_resource_path(rs["id"])
-            os.remove(rpath)
-            os.symlink(str(path), rpath)
+            rpath.unlink()
+            rpath.symlink_to(path)
 
         # cleanup
         shutil.rmtree(tmp, ignore_errors=True)
