@@ -30,4 +30,4 @@ def list_all_resources():
 
 
 def get_commands():
-    return [import_figshare, list_all_resources]
+    return [import_figshare, import_internal, list_all_resources]
