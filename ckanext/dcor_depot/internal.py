@@ -106,7 +106,7 @@ def import_dataset(sha256_path):
         rmpath = get_resource_path(rmid, create_dirs=True)
         # This path should not exist (checked above)
         rmpath_c = rmpath.with_name(rmpath.name + "_condensed.rtdc")
-        assert not rmpath_c.exists()
+        assert not rmpath_c.exists(), "Should not exist: {}".format(rmpath_c)
         rmpath_c.symlink_to(fc)
 
         # import the resources
