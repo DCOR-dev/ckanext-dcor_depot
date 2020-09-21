@@ -1,3 +1,5 @@
+0.7.8
+ - fix: minor parsing issues
 0.7.7
  - enh: increase error verbosity when importing from internal depot
 0.7.6

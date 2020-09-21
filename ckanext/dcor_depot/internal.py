@@ -54,9 +54,10 @@ def load_sha256sum(path):
         raise
     for line in sums:
         line = line.strip()
-        ss, name = line.split("  ")
-        if name == path.name:
-            return ss
+        if line:
+            ss, name = line.split("  ")
+            if name == path.name:
+                return ss
     else:
         raise ValueError("Could not find sha256 sum for {}!".format(path))
 
