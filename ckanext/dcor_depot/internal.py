@@ -74,7 +74,7 @@ def import_dataset(sha256_path):
     else:
         raise ValueError("No condensed file for {}!".format(sha256_path))
 
-    if len(files) > 10:
+    if len(files) > 50:
         raise ValueError("Found too many ({}) files for {}!".format(
             len(files), sha256_path))
 
