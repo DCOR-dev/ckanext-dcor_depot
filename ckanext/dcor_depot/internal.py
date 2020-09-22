@@ -74,6 +74,10 @@ def import_dataset(sha256_path):
     else:
         raise ValueError("No condensed file for {}!".format(sha256_path))
 
+    if len(files) > 10:
+        raise ValueError("Found too many ({}) files for {}!".format(
+            len(files), sha256_path))
+
     files = [ff for ff in files if not ff.name.count("_condensed")]
     files = [ff for ff in files if not ff.suffix == ".sha256sums"]
 
@@ -94,7 +98,8 @@ def import_dataset(sha256_path):
     except logic.NotFound:
         package_create(context=admin_context(), data_dict=dcor_dict)
     else:
-        print("Skipping creation of {} (exists)".format(dcor_dict["name"]))
+        print("Skipping creation of {} (exists) ".format(dcor_dict["name"]),
+              end="\r")
 
     resource_show = logic.get_action("resource_show")
     resource_create = logic.get_action("resource_create")
@@ -151,8 +156,8 @@ def import_dataset(sha256_path):
         # cleanup
         shutil.rmtree(tmp, ignore_errors=True)
     else:
-        print("Skipping resource import for dataset {} (exist)".format(
-            dcor_dict["name"]))
+        print("Skipping resource for {} (exists)".format(
+              dcor_dict["name"]), end="\r")
 
 
 def internal(limit=0):
