@@ -1,5 +1,6 @@
 """Import from internal location"""
 import cgi
+import datetime
 import grp
 import json
 import mimetypes
@@ -160,18 +161,35 @@ def import_dataset(sha256_path):
               dcor_dict["name"]), end="\r")
 
 
-def internal(limit=0):
-    """Import internal datasets"""
+def internal(limit=0, start_date="2000-01-01", end_date="3000-01-01"):
+    """Import internal datasets
+
+    Parameters
+    ----------
+    limit: int
+        Limit the number of datasets to be imported; If set to 0
+        (default), all datasets are imported.
+    start_date: str
+        Only import datasets in the depot at or after this date
+        (format YYYY-MM-DD)
+    end_date: str
+        Only import datasets in the depot at or before this date
+    """
     # prerequisites
     create_internal_org()
+    start = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.datetime.strptime(end_date, "%Y-%m-%d")
 
     # iterate through all files
     ii = 0
     for ppsha in pathlib.Path(INTERNAL_DEPOT).rglob("*.sha256sums"):
-        ii += 1
-        import_dataset(ppsha)
-        if limit and ii >= limit:
-            break
+        # Check whether the date matches
+        ppdate = datetime.datetime.strptime(ppsha.name[:10], "%Y-%m-%d")
+        if ppdate >= start and ppdate <= end:
+            ii += 1
+            import_dataset(ppsha)
+            if limit and ii >= limit:
+                break
 
 
 def make_dataset_dict(path):
