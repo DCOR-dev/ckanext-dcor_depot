@@ -1,13 +1,13 @@
-import ckan.plugins as p
+import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 
 from .cli import get_commands
 from .jobs import symlink_user_dataset
 
 
-class DCORDepotPlugin(p.SingletonPlugin):
-    p.implements(p.IClick)
-    p.implements(p.IResourceController, inherit=True)
+class DCORDepotPlugin(plugins.SingletonPlugin):
+    plugins.implements(plugins.IClick)
+    plugins.implements(plugins.IResourceController, inherit=True)
 
     # IClick
     def get_commands(self):
