@@ -1,3 +1,7 @@
+0.7.12
+ - fix: download large files with small memory footprint
+0.7.11
+ - cleanup
 0.7.10
  - enh: internal-import now supports --start-date and --end-date (#6)
 0.7.9

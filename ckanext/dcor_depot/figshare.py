@@ -61,10 +61,13 @@ def create_figshare_org():
 
 
 def download_file(url, path):
-    # MIGRATION to Python 3: use "with requests" ...
-    r = requests.get(url, stream=True)
-    with open(path, 'wb') as f:
-        shutil.copyfileobj(r.raw, f)
+    """Download (large) file without big memory footprint"""
+    path = pathlib.Path(path)
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with path.open('wb') as fd:
+            for chunk in r.iter_content(chunk_size=8192):
+                fd.write(chunk)
 
 
 def figshare(limit=0):
