@@ -7,7 +7,7 @@ from .internal import internal
 
 
 @click.command()
-@click.option('--path', help='Path to directory or tar file')
+@click.argument('path')
 @click.option('--cleanup', is_flag=True, help='Remove unpacked files, '
               + "move tar to /data/archive/processed/, and archive "
               + "processing meta data in /data/archive/archived_meta.")
@@ -35,6 +35,13 @@ def depotize_archive(path, cleanup=False):
     - 2019-08-20_1126_c083de_v1_condensed.rtdc the condensed dataset
     - 2019-08-20_1126_c083de_ad1_m001_bg.png an ancillary image
     - 2019-08-20_1126_c083de_ad2_m002_bg.png another ancillary image
+
+
+    Usage
+    -----
+    .. code::
+
+       ckan depotize-archive /path/to/archive.tar
     """
     depotize(path, cleanup=cleanup)
 
