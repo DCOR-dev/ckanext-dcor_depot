@@ -1,9 +1,42 @@
 import ckan.model as model
-
 import click
 
+from .depotize import depotize
 from .figshare import figshare
 from .internal import internal
+
+
+@click.command()
+@click.option('--path', help='Path to directory or tar file')
+@click.option('--cleanup', is_flag=True, help='Remove unpacked files, '
+              + "move tar to /data/archive/processed/, and archive "
+              + "processing meta data in /data/archive/archived_meta.")
+def depotize_archive(path, cleanup=False):
+    """Transform arbitrary RT-DC data to the DCOR depot file structure
+
+    The following tasks are performed:
+
+    - unpack the tar file to `original/path/filename.tar_depotize/data`
+    - scan the unpacked directory for RT-DC data (.rtdc and .tdms);
+      found datasets are written to the text file
+      `original/path/filename.tar_depotize/measurements.txt`
+    - check whether the data files in `measurements.txt` are valid
+      and store them in `check_usable.txt`
+    - convert the data to compressed .rtdc files and create condensed
+      datasets
+
+    By default, the depot data are stored in the directory root in
+    `/data/depots/internal/` and follow the directory structure
+    `201X/2019-08/20/2019-08-20_1126_c083de*` where the allowed file names
+    in this case are
+
+    - 2019-08-20_1126_c083de.sha256sums a file containing SHA256 sums
+    - 2019-08-20_1126_c083de_v1.rtdc the actual measurement
+    - 2019-08-20_1126_c083de_v1_condensed.rtdc the condensed dataset
+    - 2019-08-20_1126_c083de_ad1_m001_bg.png an ancillary image
+    - 2019-08-20_1126_c083de_ad2_m002_bg.png another ancillary image
+    """
+    depotize(path, cleanup=cleanup)
 
 
 @click.command()
@@ -34,4 +67,7 @@ def list_all_resources():
 
 
 def get_commands():
-    return [import_figshare, import_internal, list_all_resources]
+    return [depotize_archive,
+            import_figshare,
+            import_internal,
+            list_all_resources]

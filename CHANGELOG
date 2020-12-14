@@ -1,4 +1,7 @@
-0.7.12
+0.8.0
+ - feat: implement "depotize_archive" for populating the internal depot
+   with tarred RT-DC data (This step is required for importing
+   internal data with internal-import)
  - fix: download large files with small memory footprint
 0.7.11
  - cleanup

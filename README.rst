@@ -30,7 +30,7 @@ This plugin implements:
 
 
 - Import datasets from an internal depot. The depot should be present
-  at ``data/depots/internal/`` and follow the directory structure
+  at ``/data/depots/internal/`` and follow the directory structure
   ``201X/2019-08/20/2019-08-20_1126_c083de*`` where the allowed file names
   in this case are
 

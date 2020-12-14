@@ -1,0 +1,22 @@
+[
+  "FG_Config.mcf",
+  "M{RUN}_para.ini",
+  "M{RUN}_contours.txt",
+  "M{RUN}_*_contours.txt",
+  "M{RUN}_imaq.avi",
+  "M{RUN}_*_imaq.avi",
+  "M{RUN}_imag.avi",
+  "M{RUN}_*_imag.avi",
+  "M{RUN}_events_proc.avi",
+  "M{RUN}_camera.ini",
+  "M{RUN}_events.txt",
+  "M{RUN}_log.ini",
+  "M{RUN}_SoftwareSettings.ini",
+  "parameters.txt",
+  "photodet.dat",
+  "{STEM}.tdms.log",
+  "{STEM}.tdms_index",
+  "{STEM}_traces.tdms",
+  "{STEM}_traces.tdms.log",
+  "{STEM}_traces.tdms_index"
+]
