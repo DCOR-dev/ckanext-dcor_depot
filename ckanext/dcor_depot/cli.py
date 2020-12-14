@@ -11,6 +11,9 @@ from .internal import internal
 @click.option('--cleanup', is_flag=True, help='Remove unpacked files, '
               + "move tar to /data/archive/processed/, and archive "
               + "processing meta data in /data/archive/archived_meta.")
+@click.option('--cleanup', is_flag=True, help='Remove unpacked files, '
+              + "move tar to /data/archive/processed/, and archive "
+              + "processing meta data in /data/archive/archived_meta.")
 def depotize_archive(path, cleanup=False):
     """Transform arbitrary RT-DC data to the DCOR depot file structure
 

@@ -32,7 +32,7 @@ def depotize(path, cleanup=False):
     - 2019-08-20_1126_c083de_ad1_m001_bg.png an ancillary image
     - 2019-08-20_1126_c083de_ad2_m002_bg.png another ancillary image
     """
-    path = pathlib.Path(path)
+    path = pathlib.Path(path).resolve()
     if path.is_dir():
         # iterate
         for ftar in path.rglob("*"):
@@ -57,4 +57,6 @@ def depotize(path, cleanup=False):
         # move text files to metadata directory
         tmeta = pathlib.Path("/data/archive/archived_meta/") / path.name[:4]
         tmeta.mkdir(exist_ok=True, parents=True)
-        shutil.copyfile(tarn, tmeta / tarn.name)
+        shutil.copyfile(tarn, tmeta / pathlib.Path(tarn).name)
+        # delete text files
+        shutil.rmtree(datadir.parent, ignore_errors=True)
