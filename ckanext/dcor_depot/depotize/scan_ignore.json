@@ -1,5 +1,6 @@
 {
   "filenames": [
+    ".*.docx",
     ".*_Extended_Filtered_name.h5",
     ".*_Extended_Filtered_name.xlsx",
     ".*_Extended_name.h5",
@@ -7,7 +8,10 @@
     ".*_Extended_unfiltered.h5",
     ".*_Extended_unfiltered.xlsx",
     ".*_extraDebug.txt",
+    ".*.pdf",
+    ".*.poly",
     ".*.so2",
+    ".*.zip",
     ".*ul_s.tdms.png",
     ".*ul_s.tdms.svg",
     ".*ul_s.tdms.xml",

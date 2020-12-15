@@ -38,11 +38,7 @@ def depotize(path, cleanup=True, abort_on_unknown=True, verbose=1):
         for ftar in path.rglob("*"):
             if ftar.suffix in [".tar", ".tar.gz"]:
                 if not ftar.is_dir():
-                    if depotize(ftar, cleanup=cleanup):
-                        continue
-                    else:
-                        # User aborted
-                        break
+                    depotize(ftar, cleanup=cleanup)
         return
     if verbose >= 1:
         print("Processing {}".format(path))
@@ -59,7 +55,7 @@ def depotize(path, cleanup=True, abort_on_unknown=True, verbose=1):
         print(" There were unknown files:")
         [print("  {}".format(ff)) for ff in scan_lists["files unknown"]]
         print("ABORTING!")
-        return False
+        return
 
     check_res = check(datadir.parent / "measurements.txt", verbose=verbose)
     if verbose >= 1:
@@ -86,5 +82,3 @@ def depotize(path, cleanup=True, abort_on_unknown=True, verbose=1):
         shutil.copyfile(tarn, tmeta / pathlib.Path(tarn).name)
         # delete text files
         shutil.rmtree(datadir.parent, ignore_errors=True)
-
-    return True

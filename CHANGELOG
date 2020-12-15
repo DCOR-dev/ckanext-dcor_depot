@@ -1,3 +1,6 @@
+0.8.1
+ - enh: when aborting depotize, do not abort recursive depotize
+ - enh: update file ignore patterns for depotize
 0.8.0
  - feat: implement "depotize_archive" for populating the internal depot
    with tarred RT-DC data (This step is required for importing
