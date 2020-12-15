@@ -29,10 +29,16 @@ This plugin implements:
      ckan -c /etc/ckan/default/ckan.ini import-figshare
 
 
-- Import datasets from an internal depot. The depot should be present
-  at ``/data/depots/internal/`` and follow the directory structure
-  ``201X/2019-08/20/2019-08-20_1126_c083de*`` where the allowed file names
-  in this case are
+- Populate an internal depot from RT-DC data stored in tar archives. This
+  is part of an effort to have automated imports of RT-DC data from other
+  sources. The idea is to move experimental data to the DCOR server in
+  tar archives and DCOR can then populate the internal depot with it.
+  The location of the internal depot is ``/data/depots/internal/``
+  and it follows a very specific directory structure
+  ``201X/2019-08/20/2019-08-20_1126_c083de*`` where the path is generated
+  from the acquisition date, time, and part of the hash (``c083de``) of
+  the original data file. According to this scheme, all files with the
+  same path stem belong to one dataset:
 
   - ``2019-08-20_1126_c083de.sha256sums`` a file containing SHA256 sums
   - ``2019-08-20_1126_c083de_v1.rtdc`` the actual measurement
@@ -40,6 +46,15 @@ This plugin implements:
   - ``2019-08-20_1126_c083de_ad1_m001_bg.png`` an ancillary image
   - ``2019-08-20_1126_c083de_ad2_m002_bg.png`` another ancillary image
   - ...
+
+  ::
+
+     ckan -c /etc/ckan/default/ckan.ini depotize-archive
+
+
+- Import datasets from the internal depot. The previous command
+  ``depotize-archive`` just populates the depot directory structure.
+  To make the datasets available in CKAN, this step must be performed:
 
   ::
 
