@@ -1,3 +1,4 @@
+ - enh: minor improvements of depotize script
 0.8.1
  - enh: when aborting depotize, do not abort recursive depotize
  - enh: update file ignore patterns for depotize

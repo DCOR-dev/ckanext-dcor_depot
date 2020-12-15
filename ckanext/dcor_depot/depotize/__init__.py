@@ -52,9 +52,7 @@ def depotize(path, cleanup=True, abort_on_unknown=True, verbose=1):
                 print(" {} {} (scan)".format(scan_info[key], key))
 
     if scan_info["files unknown"] and abort_on_unknown:
-        print(" There were unknown files:")
-        [print("  {}".format(ff)) for ff in scan_lists["files unknown"]]
-        print("ABORTING!")
+        print(" Abroting, because there are unknown files!")
         return
 
     check_res = check(datadir.parent / "measurements.txt", verbose=verbose)

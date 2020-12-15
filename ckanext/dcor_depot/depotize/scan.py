@@ -88,7 +88,8 @@ def scan(path, verbose=1):
     #: Initially, this list is populated with all filenames. As
     #: the other lists/dicts are populated, this list is
     #: depopulated, yielding all unsorted files (python scripts,
-    #: executables, etc.).
+    #: executables, etc.). Ideally, the list is empty after the scan.
+    #: If this is not the case, a human should have a look.
     filelist = []
 
     # populate `filelist` and `ignored`
