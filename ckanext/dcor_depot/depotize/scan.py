@@ -191,7 +191,7 @@ def scan(path, verbose=1):
         "files unknown": filelist,
     }
 
-    if verbose >= 1:
+    if verbose >= 2:
         for key in scan_info:
             print("{}: {}".format(key, scan_info[key]))
 

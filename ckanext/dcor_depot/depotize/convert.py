@@ -37,7 +37,7 @@ def convert(pathtxt, verbose=1):
     unused = []
 
     for ii, line in enumerate(data):
-        if verbose >= 1:
+        if verbose >= 2:
             print("Converting: {:.2f}%".format(ii/length*100), end="\r")
         line = line.strip()
         if line:
@@ -154,7 +154,7 @@ def convert(pathtxt, verbose=1):
     # Write unused files
     with pathtxt.with_name("convert_excluded.txt").open("w") as fd:
         fd.writelines([str(f)+"\n" for f in unused])
-    if verbose >= 1:
+    if verbose >= 2:
         print("Converting: 100% Done.")
 
 

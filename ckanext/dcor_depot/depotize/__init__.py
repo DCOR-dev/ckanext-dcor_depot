@@ -49,7 +49,7 @@ def depotize(path, cleanup=True, abort_on_unknown=True, verbose=1):
     # unpack and check mdf5 (if available)
     datadir = unpack(path)
     # scan unpacked directory
-    scan_info, scan_lists = scan(datadir, verbose=verbose-1)
+    scan_info, scan_lists = scan(datadir, verbose=verbose)
     if verbose >= 1:
         for key in ["datasets", "datasets excluded", "files unknown"]:
             if scan_info[key]:
@@ -61,13 +61,13 @@ def depotize(path, cleanup=True, abort_on_unknown=True, verbose=1):
         print("ABORTING!")
         return False
 
-    check_res = check(datadir.parent / "measurements.txt", verbose=verbose-1)
+    check_res = check(datadir.parent / "measurements.txt", verbose=verbose)
     if verbose >= 1:
         for key in ["usable", "invalid", "violations", "alerts"]:
             if check_res[key]:
                 print(" {} {} (check)".format(len(check_res[key]), key))
 
-    convert(datadir.parent / "check_usable.txt", verbose=verbose-1)
+    convert(datadir.parent / "check_usable.txt", verbose=verbose)
 
     if cleanup:
         # remove data dir

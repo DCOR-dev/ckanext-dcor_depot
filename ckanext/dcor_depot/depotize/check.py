@@ -94,7 +94,7 @@ def check(pathtxt, verbose=1):
                 invalid.append(path)
                 continue
             except BaseException:
-                if verbose >= 0:
+                if verbose >= 1:
                     print("!!! OTHER PROBELM WITH {}".format(path))
                 invalid.append(path)
                 continue
@@ -117,7 +117,7 @@ def check(pathtxt, verbose=1):
                     expkey = "Features: wrong event count abs(diff) < 5"
                     expected[expkey].append(path)
                 else:
-                    if verbose >= 1:
+                    if verbose >= 2:
                         print("{}: {}".format(v, path))
                     if v not in violations:
                         violations[v] = []
@@ -141,7 +141,7 @@ def check(pathtxt, verbose=1):
             # if we got here, we can at least use the data
             usable.append(line)
 
-    if verbose >= 1:
+    if verbose >= 2:
         print("Check took {:.0f} mins.".format((time.time()-t0)/60))
 
     with pathtxt.with_name("check_info.txt").open("w") as fd:
