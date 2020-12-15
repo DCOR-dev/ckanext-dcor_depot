@@ -8,6 +8,8 @@ def unpack(path):
     path = pathlib.Path(path)
     if not path.exists():
         raise FileNotFoundError("File not found: {}".format(path))
+    elif path.is_dir():
+        raise ValueError("File must be a tar archive: {}".format(path))
     datadir = path.with_name(path.name + "_depotize") / "data"
     datadir.mkdir(parents=True, exist_ok=True)
     shutil.unpack_archive(path, extract_dir=datadir)

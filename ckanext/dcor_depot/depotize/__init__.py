@@ -7,7 +7,7 @@ from .scan import scan
 from .unpack import unpack
 
 
-def depotize(path, cleanup=False):
+def depotize(path, cleanup=True, abort_on_unknown=True, verbose=1):
     """Transform arbitrary .rtdc data to the depot structure
 
     The following tasks are performed:
@@ -36,12 +36,38 @@ def depotize(path, cleanup=False):
     if path.is_dir():
         # iterate
         for ftar in path.rglob("*"):
-            if ftar.suffix() in (".tar", ".tar.gz"):
-                depotize(ftar)
+            if ftar.suffix in [".tar", ".tar.gz"]:
+                if not ftar.is_dir():
+                    if depotize(ftar, cleanup=cleanup):
+                        continue
+                    else:
+                        # User aborted
+                        break
+        return
+    if verbose >= 1:
+        print("Processing {}".format(path))
+    # unpack and check mdf5 (if available)
     datadir = unpack(path)
-    scan(datadir)
-    check(datadir.parent / "measurements.txt")
-    convert(datadir.parent / "check_usable.txt")
+    # scan unpacked directory
+    scan_info, scan_lists = scan(datadir, verbose=verbose-1)
+    if verbose >= 1:
+        for key in ["datasets", "datasets excluded", "files unknown"]:
+            if scan_info[key]:
+                print(" {} {} (scan)".format(scan_info[key], key))
+
+    if scan_info["files unknown"] and abort_on_unknown:
+        print(" There were unknown files:")
+        [print("  {}".format(ff)) for ff in scan_lists["files unknown"]]
+        print("ABORTING!")
+        return False
+
+    check_res = check(datadir.parent / "measurements.txt", verbose=verbose-1)
+    if verbose >= 1:
+        for key in ["usable", "invalid", "violations", "alerts"]:
+            if check_res[key]:
+                print(" {} {} (check)".format(len(check_res[key]), key))
+
+    convert(datadir.parent / "check_usable.txt", verbose=verbose-1)
 
     if cleanup:
         # remove data dir
@@ -60,3 +86,5 @@ def depotize(path, cleanup=False):
         shutil.copyfile(tarn, tmeta / pathlib.Path(tarn).name)
         # delete text files
         shutil.rmtree(datadir.parent, ignore_errors=True)
+
+    return True

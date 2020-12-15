@@ -8,7 +8,6 @@ import time
 
 from dclab.rtdc_dataset import fmt_tdms
 
-
 #: Files that belong to a measurement but must be copied,
 #: because there is no equivalent in the .rtdc file format
 #: (e.g. background images).
@@ -65,7 +64,7 @@ def load_json_resource(resource):
     return data
 
 
-def scan(path, verbose=False):
+def scan(path, verbose=1):
     """Scan directory tree and return number of measurements/junk/unsorted"""
     path = pathlib.Path(path)
 
@@ -174,30 +173,40 @@ def scan(path, verbose=False):
                 filelist.remove(pc)
 
     # show summary
-    messages = ["Scan took {:.0f} min:".format((time.time()-t_start)/60),
-                "{} usable measurements.".format(len(measurements)),
-                "{} measurements with additional files to copy.".format(
-                    len(copy_data)),
-                "{} measurements cannot be used.".format(
-                    len(measurements_excl)),
-                "{} files were ignored.".format(len(ignored)),
-                "{} empty directories.".format(len(empty_dirs)),
-                "{} unsorted files.".format(len(filelist))]
-    if verbose:
-        for mm in messages:
-            print(mm)
+    scan_info = {"duration [min]": (time.time() - t_start) / 60,
+                 "datasets": len(measurements),
+                 "datasets with ancillaries": len(copy_data),
+                 "datasets excluded": len(measurements_excl),
+                 "files ignored": len(ignored),
+                 "directories empty": len(empty_dirs),
+                 "files unknown": len(filelist),
+                 }
+
+    scan_lists = {
+        "datasets": measurements,
+        "datasets with ancillaries": copy_data,
+        "datasets excluded": measurements_excl,
+        "files ignored": ignored,
+        "directories empty": empty_dirs,
+        "files unknown": filelist,
+    }
+
+    if verbose >= 1:
+        for key in scan_info:
+            print("{}: {}".format(key, scan_info[key]))
 
     # save results
     pout = path.parent
 
     with open(pout / "summary.txt", "w") as fd:
-        for mm in messages:
-            fd.write("{}\n".format(mm))
+        for key in scan_info:
+            fd.write("{}: {}\n".format(key, scan_info[key]))
 
     with open(pout / "measurements.txt", "w") as fd:
         for ms in measurements:
             if ms in copy_data:
-                cd = "\t"+"\t".join(["{}".format(mi) for mi in copy_data[ms]])
+                cd = "\t" + "\t".join(["{}".format(mi)
+                                       for mi in copy_data[ms]])
             else:
                 cd = ""
             try:
@@ -213,6 +222,8 @@ def scan(path, verbose=False):
         for us in filelist:
             fd.write("{}\n".format(us))
 
+    return scan_info, scan_lists
+
 
 if __name__ == "__main__":
-    scan(sys.argv[-1], verbose=True)
+    scan(sys.argv[-1], verbose=1)

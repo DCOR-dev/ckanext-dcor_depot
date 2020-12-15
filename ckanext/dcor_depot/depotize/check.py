@@ -41,7 +41,7 @@ def event_count_difference(v):
     return diff
 
 
-def check(pathtxt, verbose=False):
+def check(pathtxt, verbose=1):
     pathtxt = pathlib.Path(pathtxt)
     if not pathtxt.name == "measurements.txt":
         raise ValueError("Please specify a 'measurements.txt' file!")
@@ -94,7 +94,7 @@ def check(pathtxt, verbose=False):
                 invalid.append(path)
                 continue
             except BaseException:
-                if verbose:
+                if verbose >= 0:
                     print("!!! OTHER PROBELM WITH {}".format(path))
                 invalid.append(path)
                 continue
@@ -105,7 +105,7 @@ def check(pathtxt, verbose=False):
                 except BaseException:
                     pass
             if not use_wrong_event_count(viol):
-                if verbose:
+                if verbose >= 1:
                     print("!!! Excluded due to bad event counts: {}".format(
                         path))
                 invalid.append(path)
@@ -117,7 +117,7 @@ def check(pathtxt, verbose=False):
                     expkey = "Features: wrong event count abs(diff) < 5"
                     expected[expkey].append(path)
                 else:
-                    if verbose:
+                    if verbose >= 1:
                         print("{}: {}".format(v, path))
                     if v not in violations:
                         violations[v] = []
@@ -141,7 +141,7 @@ def check(pathtxt, verbose=False):
             # if we got here, we can at least use the data
             usable.append(line)
 
-    if verbose:
+    if verbose >= 1:
         print("Check took {:.0f} mins.".format((time.time()-t0)/60))
 
     with pathtxt.with_name("check_info.txt").open("w") as fd:
@@ -181,6 +181,15 @@ def check(pathtxt, verbose=False):
                 fd.write("{}\n".format(pvi))
             fd.write("\n")
 
+    check_results = {
+        "alerts": alerts,
+        "information": information,
+        "invalid": invalid,
+        "usable": usable,
+        "violations": violations,
+    }
+    return check_results
+
 
 if __name__ == "__main__":
-    check(sys.argv[-1], verbose=True)
+    check(sys.argv[-1], verbose=1)

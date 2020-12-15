@@ -8,13 +8,14 @@ from .internal import internal
 
 @click.command()
 @click.argument('path')
-@click.option('--cleanup', is_flag=True, help='Remove unpacked files, '
+@click.option('--ignore-unknown', is_flag=True,
+              help='Continue when encountering unknown files')
+@click.option('--no-cleanup', is_flag=True, help='Remove unpacked files, '
               + "move tar to /data/archive/processed/, and archive "
               + "processing meta data in /data/archive/archived_meta.")
-@click.option('--cleanup', is_flag=True, help='Remove unpacked files, '
-              + "move tar to /data/archive/processed/, and archive "
-              + "processing meta data in /data/archive/archived_meta.")
-def depotize_archive(path, cleanup=False):
+@click.option('--verbosity', default=1, type=int,
+              help='Increase for more verbosity')
+def depotize_archive(path, no_cleanup=False, ignore_unknown=True, verbosity=1):
     """Transform arbitrary RT-DC data to the DCOR depot file structure
 
     The following tasks are performed:
@@ -46,7 +47,10 @@ def depotize_archive(path, cleanup=False):
 
        ckan depotize-archive /path/to/archive.tar
     """
-    depotize(path, cleanup=cleanup)
+    depotize(path,
+             cleanup=not no_cleanup,
+             abort_on_unknown=not ignore_unknown,
+             verbose=verbosity)
 
 
 @click.command()

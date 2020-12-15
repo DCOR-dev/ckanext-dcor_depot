@@ -27,7 +27,7 @@ DATA_DIR = INTERNAL_DEPOT + "/{YYY}X/{YYYY}-{MM}/{DD}"
 NAME_STEM = "{YYYY}-{MM}-{DD}_{t}_{hex}"
 
 
-def convert(pathtxt, verbose=False):
+def convert(pathtxt, verbose=1):
     pathtxt = pathlib.Path(pathtxt)
     if not pathtxt.name == "check_usable.txt":
         raise ValueError("Please specify a 'check_usable.txt' file!")
@@ -37,7 +37,7 @@ def convert(pathtxt, verbose=False):
     unused = []
 
     for ii, line in enumerate(data):
-        if verbose:
+        if verbose >= 1:
             print("Converting: {:.2f}%".format(ii/length*100), end="\r")
         line = line.strip()
         if line:
@@ -103,7 +103,7 @@ def convert(pathtxt, verbose=False):
                     cli.compress(path_out=path_out, path_in=files[0])
                 except BaseException:
                     delete_stem(ddir, stem)
-                    if verbose:
+                    if verbose >= 1:
                         print("!! Problem compressing {}".format(files[0]))
                     unused.append(files[0])
                     continue
@@ -118,14 +118,14 @@ def convert(pathtxt, verbose=False):
                                       verbose=False)
                 except fmt_tdms.event_contour.ContourIndexingError:
                     delete_stem(ddir, stem)
-                    if verbose:
+                    if verbose >= 1:
                         print(
                             "!! ContourIndexingError for {}".format(files[0]))
                     unused.append(files[0])
                     continue
                 except BaseException:
                     delete_stem(ddir, stem)
-                    if verbose:
+                    if verbose >= 1:
                         print("!! OTHER ERROR for {}".format(files[0]))
                     unused.append(files[0])
                     continue
@@ -141,7 +141,7 @@ def convert(pathtxt, verbose=False):
                 cli.condense(path_out=path_out_cond, path_in=path_out)
             except BaseException:
                 delete_stem(ddir, stem)
-                if verbose:
+                if verbose >= 1:
                     print("!! Condensing Error for {}".format(files[0]))
                 unused.append(files[0])
                 continue
@@ -154,7 +154,7 @@ def convert(pathtxt, verbose=False):
     # Write unused files
     with pathtxt.with_name("convert_excluded.txt").open("w") as fd:
         fd.writelines([str(f)+"\n" for f in unused])
-    if verbose:
+    if verbose >= 1:
         print("Converting: 100% Done.")
 
 
