@@ -10,7 +10,10 @@
     ".*_extraDebug.txt",
     ".*.pdf",
     ".*.poly",
+    ".*.rtf",
     ".*.so2",
+    ".*.tsv",
+    ".*.xlsm",
     ".*.zip",
     ".*ul_s.tdms.png",
     ".*ul_s.tdms.svg",
@@ -22,7 +25,6 @@
     ".DS_Store",
     "._.DS_Store",
     ".dopbox",
-    "stats_.*.tsv",
     "Thumbs.db"
   ],
   "folders": [

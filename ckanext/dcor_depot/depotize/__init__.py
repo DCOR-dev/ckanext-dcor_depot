@@ -1,5 +1,6 @@
 import pathlib
 import shutil
+import traceback as tb
 
 from .check import check
 from .convert import convert
@@ -52,10 +53,15 @@ def depotize(path, cleanup=True, abort_on_unknown=True, verbose=1):
                 print(" {} {} (scan)".format(scan_info[key], key))
 
     if scan_info["files unknown"] and abort_on_unknown:
-        print(" Abroting, because there are unknown files!")
+        print(" Aborting, because there are unknown files!")
         return
 
-    check_res = check(datadir.parent / "measurements.txt", verbose=verbose)
+    try:
+        check_res = check(datadir.parent / "measurements.txt", verbose=verbose)
+    except BaseException:
+        tb.print_exc()
+        print(" Aborting, because an Exception was raised!")
+        return
     if verbose >= 1:
         for key in ["usable", "invalid", "violations", "alerts"]:
             if check_res[key]:
