@@ -40,7 +40,12 @@ def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
         for ftar in path.rglob("*"):
             if ftar.suffix in [".tar", ".tar.gz"]:
                 if not ftar.is_dir():
-                    depotize(ftar, cleanup=cleanup)
+                    depotize(ftar,
+                             cleanup=cleanup,
+                             abort_on_unknown=abort_on_unknown,
+                             skip_failed=skip_failed,
+                             verbose=verbose,
+                             )
         return
     if verbose >= 1:
         print("Processing {}".format(path))
