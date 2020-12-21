@@ -5,10 +5,11 @@ import traceback as tb
 from .check import check
 from .convert import convert
 from .scan import scan
-from .unpack import unpack
+from .unpack import get_working_directory, unpack
 
 
-def depotize(path, cleanup=True, abort_on_unknown=True, verbose=1):
+def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
+             verbose=1):
     """Transform arbitrary .rtdc data to the depot structure
 
     The following tasks are performed:
@@ -43,6 +44,11 @@ def depotize(path, cleanup=True, abort_on_unknown=True, verbose=1):
         return
     if verbose >= 1:
         print("Processing {}".format(path))
+
+    if get_working_directory(path).exists() and skip_failed:
+        print(" Skipping, because depozize failed in previous run!")
+        return
+
     # unpack and check mdf5 (if available)
     datadir = unpack(path)
     # scan unpacked directory

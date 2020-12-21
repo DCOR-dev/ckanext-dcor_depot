@@ -13,9 +13,12 @@ from .internal import internal
 @click.option('--no-cleanup', is_flag=True, help='Remove unpacked files, '
               + "move tar to /data/archive/processed/, and archive "
               + "processing meta data in /data/archive/archived_meta.")
+@click.option('--skip-failed', is_flag=True,
+              help='Skip archives that failed in previous runs')
 @click.option('--verbosity', default=1, type=int,
               help='Increase for more verbosity')
-def depotize_archive(path, no_cleanup=False, ignore_unknown=True, verbosity=1):
+def depotize_archive(path, no_cleanup=False, ignore_unknown=True,
+                     skip_failed=False, verbosity=1):
     """Transform arbitrary RT-DC data to the DCOR depot file structure
 
     The following tasks are performed:
@@ -50,6 +53,7 @@ def depotize_archive(path, no_cleanup=False, ignore_unknown=True, verbosity=1):
     depotize(path,
              cleanup=not no_cleanup,
              abort_on_unknown=not ignore_unknown,
+             skip_failed=skip_failed,
              verbose=verbosity)
 
 
