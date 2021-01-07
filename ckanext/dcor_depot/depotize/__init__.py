@@ -51,10 +51,10 @@ def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
         print("Processing {}".format(path))
 
     if get_working_directory(path).exists() and skip_failed:
-        print(" Skipping, because depozize failed in previous run!")
+        print(" Skipping, because depotize failed in previous run!")
         return
 
-    # unpack and check mdf5 (if available)
+    # unpack and check md5 (if available)
     datadir = unpack(path)
     # scan unpacked directory
     scan_info, scan_lists = scan(datadir, verbose=verbose)
