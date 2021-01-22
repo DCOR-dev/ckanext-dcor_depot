@@ -1,3 +1,5 @@
+0.8.5
+ - debug: show current data file when converting during depotize
 0.8.4
  - fix: depotize arguments not passed during directory iteration
 0.8.3

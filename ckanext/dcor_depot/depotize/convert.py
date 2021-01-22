@@ -38,7 +38,9 @@ def convert(pathtxt, verbose=1):
 
     for ii, line in enumerate(data):
         if verbose >= 2:
-            print("Converting: {:.2f}%".format(ii/length*100), end="\r")
+            print("Converting: {:.2f}%: {}".format(ii/length*100,
+                                                   line.split("\t")[0]),
+                  end="\r")
         line = line.strip()
         if line:
             files = [pathlib.Path(ff) for ff in line.split("\t")]
