@@ -10,9 +10,12 @@ from .internal import internal
 @click.argument('path')
 @click.option('--ignore-unknown', is_flag=True,
               help='Continue when encountering unknown files')
-@click.option('--no-cleanup', is_flag=True, help='Remove unpacked files, '
-              + "move tar to /data/archive/processed/, and archive "
-              + "processing meta data in /data/archive/archived_meta.")
+@click.option('--no-cleanup', is_flag=True, help='By default, temporary files '
+              + 'are cleaned up, which involves: removing untarred files, '
+              + 'moving source tar files to /data/archive/processed/, '
+              + 'and archiving processing-metadata in '
+              + '/data/archive/archived_meta. Set this flag if you do not '
+              + 'want these things to happen.')
 @click.option('--skip-failed', is_flag=True,
               help='Skip archives that failed in previous runs')
 @click.option('--verbosity', default=1, type=int,
@@ -43,12 +46,13 @@ def depotize_archive(path, no_cleanup=False, ignore_unknown=True,
     - 2019-08-20_1126_c083de_ad1_m001_bg.png an ancillary image
     - 2019-08-20_1126_c083de_ad2_m002_bg.png another ancillary image
 
-
-    Usage
-    -----
-    .. code::
+    You may run this command for individual archives:
 
        ckan depotize-archive /path/to/archive.tar
+
+    or recursively for entire directory trees
+
+       ckan depotize-archive /path/to/directory/
     """
     depotize(path,
              cleanup=not no_cleanup,
