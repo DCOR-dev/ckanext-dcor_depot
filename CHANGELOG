@@ -1,4 +1,6 @@
 0.8.8
+ - setup: bump dclab to 0.32.2 (avoid OOM in depotize for
+   large datasets with trace features)
  - docs: fix wrong/misleading docstring
 0.8.7
  - build: use install_requires instead of requirements.txt
