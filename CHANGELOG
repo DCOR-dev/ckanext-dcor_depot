@@ -1,6 +1,7 @@
 0.8.9
  - fix: scanning for .tdms files did not work correctly (ancillary
    files ended up in unknown file list)
+ - enh: update expected message list for checks during depotize
 0.8.8
  - setup: bump dclab to 0.32.2 (avoid OOM in depotize for
    large datasets with trace features)

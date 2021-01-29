@@ -67,6 +67,8 @@ def check(pathtxt, verbose=1):
         # will be added when tdms2rtdc is run
         "Metadata: Missing key [fluorescence] 'channel count'": [],
         "Metadata: Missing key [fluorescence] 'samples per event'": [],
+        "Metadata: Missing key [setup] 'temperature', because the 'temp' " \
+        + "feature is given": [],
         # Violations
         # only for newer setups
         "Metadata: Missing key [setup] 'medium'": [],
@@ -142,7 +144,7 @@ def check(pathtxt, verbose=1):
             usable.append(line)
 
     if verbose >= 2:
-        print("Check took {:.0f} mins.".format((time.time()-t0)/60))
+        print("Check took {:.0f} mins.".format((time.time() - t0) / 60))
 
     with pathtxt.with_name("check_info.txt").open("w") as fd:
         for ik in sorted(information.keys()):
