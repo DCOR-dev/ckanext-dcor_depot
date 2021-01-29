@@ -122,7 +122,8 @@ def scan(path, verbose=1):
         filelist.remove(pp)
         # 1st test: TDMS Measurement has exactly one set of data files
         try:
-            if path.suffix == ".tdms":
+            if pp.suffix == ".tdms":
+                # look for files associated with tdms data
                 ppass = find_associates(pp, "scan_associate_tdms.json")
             else:
                 ppass = []
@@ -137,6 +138,11 @@ def scan(path, verbose=1):
                     # (is part of another measurement)
                     filelist.remove(pa)
                 except ValueError:
+                    if pa in ignored:
+                        # An ignore-filter prematurely filtered out this
+                        # file (could be e.g. a txt file).
+                        ignored.remove(pa)
+                        continue
                     # This might happen when a user records multiple
                     # measurements with different flow rates and does not
                     # increment the flow rate in Shape-In.
@@ -152,7 +158,11 @@ def scan(path, verbose=1):
                 # clean measurement (at least until now)
                 measurements[pp] = ppass
                 # add associated files
-                ass = find_associates(pp, "scan_ancillaries.json")
+                if pp.suffix == ".tdms":
+                    # look for files associated with tdms data
+                    ass = find_associates(pp, "scan_ancillaries_tdms.json")
+                else:
+                    ass = find_associates(pp, "scan_ancillaries_hdf5.json")
                 copy_data[pp] = ass
                 for af in ass:
                     filelist.remove(af)

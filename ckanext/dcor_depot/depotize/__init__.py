@@ -2,10 +2,11 @@ import pathlib
 import shutil
 import traceback as tb
 
-from .check import check
-from .convert import convert
-from .scan import scan
-from .unpack import get_working_directory, unpack
+from .check import check as d_check
+from .convert import convert as d_convert
+from .scan import scan as d_scan
+from .unpack import get_working_directory
+from .unpack import unpack as d_unpack
 
 
 def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
@@ -55,9 +56,9 @@ def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
         return
 
     # unpack and check md5 (if available)
-    datadir = unpack(path)
+    datadir = d_unpack(path)
     # scan unpacked directory
-    scan_info, scan_lists = scan(datadir, verbose=verbose)
+    scan_info, scan_lists = d_scan(datadir, verbose=verbose)
     if verbose >= 1:
         for key in ["datasets", "datasets excluded", "files unknown"]:
             if scan_info[key]:
@@ -68,7 +69,8 @@ def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
         return
 
     try:
-        check_res = check(datadir.parent / "measurements.txt", verbose=verbose)
+        check_res = d_check(datadir.parent / "measurements.txt",
+                            verbose=verbose)
     except BaseException:
         tb.print_exc()
         print(" Aborting, because an Exception was raised!")
@@ -78,7 +80,7 @@ def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
             if check_res[key]:
                 print(" {} {} (check)".format(len(check_res[key]), key))
 
-    convert(datadir.parent / "check_usable.txt", verbose=verbose)
+    d_convert(datadir.parent / "check_usable.txt", verbose=verbose)
 
     if cleanup:
         # remove data dir

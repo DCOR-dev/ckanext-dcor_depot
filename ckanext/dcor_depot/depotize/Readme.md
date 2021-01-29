@@ -12,6 +12,11 @@ The general pipeline is:
 
 These JSON files hold information about the files to be ignored and excluded.
 
-- scan_ancillaries.json: simple `format` string replacement scheme.
+- scan_ancillaries_tdms.json: simple `format` string replacement scheme.
+  These are ancillary files that should be copied over to the depot
+  alongside the .rtdc file created from the tdms file.
 - scan_associate_tdms: simple `format` string replacement scheme.
+  These are associate files for the tdms file format that should not
+  be copied over to the depot (there should be no duplicate entries here and in
+  scan_ancillaries_tdms.json).
 - scan_ignore.json: regexp (Python `reg` module) scheme

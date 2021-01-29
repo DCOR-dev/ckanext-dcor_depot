@@ -3,6 +3,7 @@
   "M{RUN}_para.ini",
   "M{RUN}_contours.txt",
   "M{RUN}_*_contours.txt",
+  "M{RUN}_extraDebug.txt",
   "M{RUN}_imaq.avi",
   "M{RUN}_*_imaq.avi",
   "M{RUN}_imag.avi",

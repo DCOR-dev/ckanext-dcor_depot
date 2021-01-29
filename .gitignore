@@ -43,3 +43,4 @@ docs/_build/
 _version_save.py
 
 .idea
+.eggs
