@@ -56,7 +56,7 @@ def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
         return
 
     # unpack and check md5 (if available)
-    datadir = d_unpack(path)
+    datadir = d_unpack(path, verbose=verbose)
     # scan unpacked directory
     scan_info, scan_lists = d_scan(datadir, verbose=verbose)
     if verbose >= 1:

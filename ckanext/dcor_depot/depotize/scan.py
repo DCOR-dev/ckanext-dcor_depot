@@ -165,7 +165,12 @@ def scan(path, verbose=1):
                     ass = find_associates(pp, "scan_ancillaries_hdf5.json")
                 copy_data[pp] = ass
                 for af in ass:
-                    filelist.remove(af)
+                    # There may be cases where an ancillary file is shared
+                    # by multiple measurements (e.g. in some cases there
+                    # are additional measurement files that were somehow
+                    # modified with AIDeveloper).
+                    if af in filelist:
+                        filelist.remove(af)
 
     # populate `copy_data` with remaining files from `filelist`
     # (get all additional files that should be copied)

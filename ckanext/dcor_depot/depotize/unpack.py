@@ -12,12 +12,19 @@ def get_working_directory(path):
     return path.with_name(path.name + "_depotize")
 
 
-def unpack(path):
-    """Unpack a tar file to `original/path_depotize/data/`"""
+def unpack(path, verbose=0):
+    """Unpack a tar file to `original/path_depotize/data/`
+
+    Unpacking is skipped if the 'data' directory already exists.
+    """
     path = pathlib.Path(path)
     datadir = get_working_directory(path) / "data"
-    datadir.mkdir(parents=True, exist_ok=True)
-    shutil.unpack_archive(path, extract_dir=datadir)
+    if datadir.exists():
+        if verbose > 0:
+            print("Skipping extraction, because 'data' directory exists.")
+    else:
+        datadir.mkdir(parents=True, exist_ok=True)
+        shutil.unpack_archive(path, extract_dir=datadir)
     return datadir
 
 

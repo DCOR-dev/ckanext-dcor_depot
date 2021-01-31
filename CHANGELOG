@@ -1,3 +1,7 @@
+0.8.10
+ - enh: skip extraction during depotize if 'data' directory exists
+ - enh: allow an ancillary file to be shared by multiple measurements
+   in depotize
 0.8.9
  - fix: scanning for .tdms files did not work correctly (ancillary
    files ended up in unknown file list)
