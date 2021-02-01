@@ -24,7 +24,11 @@ def unpack(path, verbose=0):
             print("Skipping extraction, because 'data' directory exists.")
     else:
         datadir.mkdir(parents=True, exist_ok=True)
-        shutil.unpack_archive(path, extract_dir=datadir)
+        try:
+            shutil.unpack_archive(path, extract_dir=datadir)
+        except BaseException:
+            shutil.rmtree(datadir, ignore_errors=True)
+            raise
     return datadir
 
 
