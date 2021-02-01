@@ -188,15 +188,34 @@ def scan(path, verbose=1):
                 # Only remove if it is part of a measurement
                 filelist.remove(pc)
 
+    # results directory
+    pout = path.parent
+
+    # It is possible to manually acknowledge unknown files by copying
+    # "unsorted.txt" to "unsorted_acknowledged.txt". This makes it
+    # possible to start conversion without the "--ignore-unknown" flag.
+    usrt_ack = pathlib.Path(pout / "unsorted_acknowledged.txt")
+    if usrt_ack.exists():
+        usrt_list = usrt_ack.read_text().split("\n")
+        for pp in usrt_list:
+            pp = pathlib.Path(pp)
+            # remove any file that the user manually added
+            if pp in filelist:
+                filelist.remove(pp)
+    else:
+        usrt_list = []
+
     # show summary
-    scan_info = {"duration [min]": (time.time() - t_start) / 60,
-                 "datasets": len(measurements),
-                 "datasets with ancillaries": len(copy_data),
-                 "datasets excluded": len(measurements_excl),
-                 "files ignored": len(ignored),
-                 "directories empty": len(empty_dirs),
-                 "files unknown": len(filelist),
-                 }
+    scan_info = {
+        "duration [min]": (time.time() - t_start) / 60,
+        "datasets": len(measurements),
+        "datasets with ancillaries": len(copy_data),
+        "datasets excluded": len(measurements_excl),
+        "files ignored": len(ignored),
+        "directories empty": len(empty_dirs),
+        "files unknown": len(filelist),
+        "files unknown acknowledged": len(usrt_list),
+        }
 
     scan_lists = {
         "datasets": measurements,
@@ -212,8 +231,6 @@ def scan(path, verbose=1):
             print("{}: {}".format(key, scan_info[key]))
 
     # save results
-    pout = path.parent
-
     with open(pout / "summary.txt", "w") as fd:
         for key in scan_info:
             fd.write("{}: {}\n".format(key, scan_info[key]))
