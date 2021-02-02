@@ -1,7 +1,6 @@
 """Import predefined datasets from figshare.com"""
 import cgi
 import grp
-import hashlib
 import mimetypes
 import os
 import pathlib
@@ -16,27 +15,17 @@ from dcor_shared import get_resource_path
 from html2text import html2text
 import requests
 
+from .depot import DUMMY_BYTES, make_id, sha_256
 from .orgs import FIGSHARE_ORG
 from .paths import FIGSHARE_DEPOT
-from .depot import DUMMY_BYTES, make_id, sha_256
+from .util import check_md5
+
 
 FIGSHARE_BASE = "https://api.figshare.com/v2"
 
 
 def admin_context():
     return {'ignore_auth': True, 'user': 'default'}
-
-
-def check_md5(path, md5sum, block_size=2**20):
-    file_hash = hashlib.md5()
-    with path.open("rb") as fd:
-        while True:
-            data = fd.read(block_size)
-            if not data:
-                break
-            file_hash.update(data)
-    if file_hash.hexdigest() != md5sum:
-        raise ValueError("MD5 sum mismatch for {}!".format(path))
 
 
 def create_figshare_org():

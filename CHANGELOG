@@ -1,6 +1,8 @@
 0.8.11
  - enh: allow to manually acknowledge unknown files by creating
-   the file "unsorted_acknowledged.txt"
+   the file "unsorted_acknowledged.txt" in depotize
+ - enh: check the MD5 sum of archives during depotize if a .md5
+   file is present
 0.8.10
  - enh: skip extraction during depotize if 'data' directory exists
  - enh: allow an ancillary file to be shared by multiple measurements

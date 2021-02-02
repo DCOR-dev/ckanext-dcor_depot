@@ -2,6 +2,8 @@ import pathlib
 import shutil
 import sys
 
+from ..util import check_md5
+
 
 def get_working_directory(path):
     path = pathlib.Path(path)
@@ -13,16 +15,25 @@ def get_working_directory(path):
 
 
 def unpack(path, verbose=0):
-    """Unpack a tar file to `original/path_depotize/data/`
+    """Check MD5 sum and unpack a tar file to `original/path_depotize/data/`
 
     Unpacking is skipped if the 'data' directory already exists.
     """
     path = pathlib.Path(path)
-    datadir = get_working_directory(path) / "data"
+    wdir = get_working_directory(path)
+    datadir = wdir / "data"
     if datadir.exists():
         if verbose > 0:
             print("Skipping extraction, because 'data' directory exists.")
     else:
+        # check MD5 sum if applicable
+        md5path = path.with_name(path.name + ".md5")
+        if md5path.exists():
+            wdir.mkdir(parents=True, exist_ok=True)
+            md5sum = md5path.read_text().split()[0]
+            check_md5(path, md5sum)
+            shutil.copy2(md5path, wdir)
+        # extract archive
         datadir.mkdir(parents=True, exist_ok=True)
         try:
             shutil.unpack_archive(path, extract_dir=datadir)
