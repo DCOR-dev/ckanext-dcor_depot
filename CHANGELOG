@@ -1,3 +1,5 @@
+0.8.12
+ - enh: show progress [%] also if verbose=1
 0.8.11
  - enh: allow to manually acknowledge unknown files by creating
    the file "unsorted_acknowledged.txt" in depotize

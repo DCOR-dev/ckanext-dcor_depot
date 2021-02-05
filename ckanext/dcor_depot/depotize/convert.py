@@ -37,10 +37,11 @@ def convert(pathtxt, verbose=1):
     unused = []
 
     for ii, line in enumerate(data):
-        if verbose >= 2:
-            print("Converting: {:.2f}%: {}".format(ii/length*100,
-                                                   line.split("\t")[0]),
-                  end="\r")
+        if verbose >= 1:
+            progr = "Converting: {:.2f}%".format(ii/length*100)
+            if verbose >= 2:
+                progr += ": {}".format(line.split("\t")[0])
+            print(progr, end="\r")
         line = line.strip()
         if line:
             files = [pathlib.Path(ff) for ff in line.split("\t")]
@@ -157,7 +158,7 @@ def convert(pathtxt, verbose=1):
     with pathtxt.with_name("convert_excluded.txt").open("w") as fd:
         fd.writelines([str(f)+"\n" for f in unused])
     if verbose >= 2:
-        print("Converting: 100% Done.")
+        print("Converting: 100% Done. ")
 
 
 def delete_stem(ddir, stem):
