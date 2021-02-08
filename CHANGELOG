@@ -1,3 +1,5 @@
+0.8.13
+ - enh: sys.exit(1) on KeyboardInterrupt in convert (depotize)
 0.8.12
  - enh: show progress [%] also if verbose=1
 0.8.11

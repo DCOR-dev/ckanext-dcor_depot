@@ -104,6 +104,8 @@ def convert(pathtxt, verbose=1):
             if files[0].suffix.lower() == ".rtdc":
                 try:
                     cli.compress(path_out=path_out, path_in=files[0])
+                except KeyboardInterrupt:
+                    sys.exit(1)
                 except BaseException:
                     delete_stem(ddir, stem)
                     if verbose >= 1:
@@ -126,6 +128,8 @@ def convert(pathtxt, verbose=1):
                             "!! ContourIndexingError for {}".format(files[0]))
                     unused.append(files[0])
                     continue
+                except KeyboardInterrupt:
+                    sys.exit(1)
                 except BaseException:
                     delete_stem(ddir, stem)
                     if verbose >= 1:
@@ -142,6 +146,8 @@ def convert(pathtxt, verbose=1):
             # condense path_out to path_out_min
             try:
                 cli.condense(path_out=path_out_cond, path_in=path_out)
+            except KeyboardInterrupt:
+                sys.exit(1)
             except BaseException:
                 delete_stem(ddir, stem)
                 if verbose >= 1:
