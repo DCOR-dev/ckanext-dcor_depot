@@ -1,3 +1,6 @@
+0.8.14
+ - fix: some alerts might not have been caught in depotize, which
+   is only a minor issue
 0.8.13
  - enh: sys.exit(1) on KeyboardInterrupt in convert (depotize)
 0.8.12

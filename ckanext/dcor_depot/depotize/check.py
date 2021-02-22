@@ -125,8 +125,8 @@ def check(pathtxt, verbose=1):
                         violations[v] = []
                     violations[v].append(path)
             for a in aler:
-                if v in expected:
-                    expected[v].append(path)
+                if a in expected:
+                    expected[a].append(path)
                 else:
                     if a not in alerts:
                         alerts[a] = []
