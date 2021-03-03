@@ -166,7 +166,7 @@ def import_dataset(doi):
     # activate the dataset
     package_revise = logic.get_action("package_revise")
     package_revise(context=admin_context(),
-                   data_dict={"match": {"id": dcor_dict["name"]},
+                   data_dict={"match": {"id": dcor_dict["id"]},
                               "update": {"state": "active"}})
     print("Done.")
 
