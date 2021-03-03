@@ -154,16 +154,16 @@ def import_dataset(sha256_path):
             www_gid = grp.getgrnam("www-data").gr_gid
             os.chown(rpath.parent, www_uid, www_gid)
             os.chown(rpath.parent.parent, www_uid, www_gid)
+        # activate the dataset
+        package_revise = logic.get_action("package_revise")
+        package_revise(context=admin_context(),
+                       data_dict={"match": {"id": dcor_dict["id"]},
+                                  "update": {"state": "active"}})
         # cleanup
         shutil.rmtree(tmp, ignore_errors=True)
     else:
         print("Skipping resource for {} (exists)".format(
               dcor_dict["name"]), end="\r")
-    # activate the dataset
-    package_revise = logic.get_action("package_revise")
-    package_revise(context=admin_context(),
-                   data_dict={"match": {"id": dcor_dict["id"]},
-                              "update": {"state": "active"}})
 
 
 def internal(limit=0, start_date="2000-01-01", end_date="3000-01-01"):

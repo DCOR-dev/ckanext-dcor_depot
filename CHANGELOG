@@ -1,3 +1,6 @@
+0.8.16
+ - ref: do not activate datasets if they already exists (internal
+   import), because this just creates overhead
 0.8.15
  - fix: activate datasets after figshare/internal import
 0.8.14
