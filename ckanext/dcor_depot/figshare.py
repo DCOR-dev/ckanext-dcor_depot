@@ -163,6 +163,10 @@ def import_dataset(doi):
             www_gid = grp.getgrnam("www-data").gr_gid
             os.chown(rpath.parent, www_uid, www_gid)
             os.chown(rpath.parent.parent, www_uid, www_gid)
+    # activate the dataset
+    package_revise = logic.get_action("package_revise")
+    package_revise(match={"id": dcor_dict["name"]},
+                   update={"state": "active"})
     print("Done.")
 
 
