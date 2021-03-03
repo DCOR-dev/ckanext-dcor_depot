@@ -161,8 +161,9 @@ def import_dataset(sha256_path):
               dcor_dict["name"]), end="\r")
     # activate the dataset
     package_revise = logic.get_action("package_revise")
-    package_revise(match={"id": dcor_dict["name"]},
-                   update={"state": "active"})
+    package_revise(context=admin_context(),
+                   data_dict={"match": {"id": dcor_dict["name"]},
+                              "update": {"state": "active"}})
 
 
 def internal(limit=0, start_date="2000-01-01", end_date="3000-01-01"):
