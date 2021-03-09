@@ -1,4 +1,5 @@
 0.8.16
+ - fix: remove .md5 sum files during cleanup in depotize-archive
  - ref: do not activate datasets if they already exists (internal
    import), because this just creates overhead
 0.8.15

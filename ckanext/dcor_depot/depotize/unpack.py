@@ -33,6 +33,8 @@ def unpack(path, verbose=0):
             md5sum = md5path.read_text().split()[0]
             check_md5(path, md5sum)
             shutil.copy2(md5path, wdir)
+            if verbose > 0:
+                print("MD5 sum OK")
         # extract archive
         datadir.mkdir(parents=True, exist_ok=True)
         try:
