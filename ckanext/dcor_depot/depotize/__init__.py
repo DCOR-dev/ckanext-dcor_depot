@@ -102,4 +102,4 @@ def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
         # delete the MD5 sum file
         md5path = path.with_name(path.name + ".md5")
         if md5path.exists():
-            md5path.unlink/()
+            md5path.unlink()
