@@ -98,7 +98,7 @@ be tested with pytest:
 
 ::
 
-    py.test ckanext
+    pytest ckanext
 
 Testing can also be done via vagrant in a virtualmachine using the
 `dcor-test <https://app.vagrantup.com/paulmueller/boxes/dcor-test/>` image.
