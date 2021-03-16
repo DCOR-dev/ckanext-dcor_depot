@@ -12,7 +12,7 @@ dcor update --yes
 pip install -e .
 pip install -r ckanext/dcor_depot/tests/requirements.txt
 # run tests with coverage
-coverage run --source=ckanext.dcor_depot -m pytest -p no:warnings ckanext
+coverage run --source=ckanext.dcor_depot --omit="*/test*" -m pytest -p no:warnings ckanext
 # Get GitHub environment variables so codecov detects GH Actions (allow command to fail)
 export $(grep -v '^#' environment.txt | xargs) || exit 0
 codecov
