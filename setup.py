@@ -29,7 +29,7 @@ setup(
     install_requires=[
         # the "ckan" dependency is implied
         "click",
-        "dclab>=0.32.2",
+        "dclab>=0.33.1",
         "dcor_shared>=0.2.0",
         "h5py",
         "html2text==2019.8.11",

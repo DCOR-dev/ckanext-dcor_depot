@@ -44,3 +44,4 @@ _version_save.py
 
 .idea
 .eggs
+.vagrant
