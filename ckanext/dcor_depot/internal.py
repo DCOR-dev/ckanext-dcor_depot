@@ -8,16 +8,18 @@ import os
 import pathlib
 import pwd
 import shutil
+import sys
 import tempfile
 
 from ckan import logic
 
 import dclab
+from dclab import cli
 from dcor_shared import get_resource_path
 
 from .orgs import INTERNAL_ORG
 from .paths import INTERNAL_DEPOT
-from .depot import DUMMY_BYTES, make_id
+from .depot import DUMMY_BYTES, make_id, sha_256
 
 
 def admin_context():
@@ -64,13 +66,14 @@ def load_sha256sum(path):
 
 
 def import_dataset(sha256_path):
+    """Import a dataset (all resources in sha256_path are added)"""
     # determine all relevant resources
     root = sha256_path.parent
     files = sorted(root.glob(sha256_path.name.split(".")[0]+"*"))
 
     for ff in files:
         if ff.name.count("_condensed"):
-            fc = ff
+            condensed_depot_path = ff
             break
     else:
         raise ValueError("No condensed file for {}!".format(sha256_path))
@@ -84,90 +87,116 @@ def import_dataset(sha256_path):
 
     for ff in files:
         if ff.suffix == ".rtdc":
+            resource_depot_path = ff
             break
     else:
         raise ValueError("No dataset file for {}!".format(sha256_path))
 
     # create the dataset
-    dcor_dict = make_dataset_dict(ff)
+    dataset_dict = make_dataset_dict(resource_depot_path)
 
     package_show = logic.get_action("package_show")
     package_create = logic.get_action("package_create")
     try:
         package_show(context=admin_context(),
-                     data_dict={"id": dcor_dict["name"]})
+                     data_dict={"id": dataset_dict["name"]})
     except logic.NotFound:
-        package_create(context=admin_context(), data_dict=dcor_dict)
+        package_create(context=admin_context(), data_dict=dataset_dict)
     else:
-        print("Skipping creation of {} (exists) ".format(dcor_dict["name"]),
+        print("Skipping creation of {} (exists) ".format(dataset_dict["name"]),
               end="\r")
 
+    # Obtain the .rtdc resource identifier
+    rtdc_id = make_id([dataset_dict["id"],
+                       resource_depot_path.name,
+                       load_sha256sum(resource_depot_path)])
+
     resource_show = logic.get_action("resource_show")
-    resource_create = logic.get_action("resource_create")
-    rmid = make_id([dcor_dict["id"], ff.name, load_sha256sum(ff)])
     try:
-        resource_show(context=admin_context(), data_dict={"id": rmid})
+        resource_show(context=admin_context(), data_dict={"id": rtdc_id})
     except logic.NotFound:
         # make link to condensed  before importing the resource
         # (to avoid conflicts with automatic generation of condensed file)
-        rmpath = get_resource_path(rmid, create_dirs=True)
-        # This path should not exist (checked above)
-        rmpath_c = rmpath.with_name(rmpath.name + "_condensed.rtdc")
-        assert not rmpath_c.exists(), "Should not exist: {}".format(rmpath_c)
-        rmpath_c.symlink_to(fc)
-
-        # import the resources
-        tmp = pathlib.Path(tempfile.mkdtemp(prefix="import_"))
+        import_rtdc_prepare_condensed(rtdc_id, condensed_depot_path)
+        # import all resources (except the condensed and sha256sum file)
         for path in files:
-            print("  - importing {}".format(path))
-            # use dummy file (workaround for MemoryError during upload)
-            upath = tmp / path.name
-            with upath.open("wb") as fd:
-                fd.write(DUMMY_BYTES)
-            shasum = load_sha256sum(path)
-            with upath.open("rb") as fd:
-                # This is a kind of hacky way of tricking CKAN into thinking
-                # that there is a file upload.
-                upload = cgi.FieldStorage()
-                upload.filename = path.name  # used in ResourceUpload
-                upload.file = fd  # used in ResourceUpload
-                upload.list.append(None)  # for boolean test in ResourceUpload
-                rs = resource_create(
-                    context=admin_context(),
-                    data_dict={
-                        "id": make_id([dcor_dict["id"],
-                                       path.name,
-                                       load_sha256sum(path)]),
-                        "package_id": dcor_dict["name"],
-                        "upload": upload,
-                        "name": path.name,
-                        "sha256": shasum,
-                        "size": path.stat().st_size,
-                        "format": mimetypes.guess_type(str(path))[0],
-                    }
-                )
-            rpath = get_resource_path(rs["id"])
-            rpath.unlink()
-            rpath.symlink_to(path)
-            # make www-data the owner of the resource
-            www_uid = pwd.getpwnam("www-data").pw_uid
-            www_gid = grp.getgrnam("www-data").gr_gid
-            os.chown(rpath.parent, www_uid, www_gid)
-            os.chown(rpath.parent.parent, www_uid, www_gid)
-        # activate the dataset
-        package_revise = logic.get_action("package_revise")
-        package_revise(context=admin_context(),
-                       data_dict={"match": {"id": dcor_dict["id"]},
-                                  "update": {"state": "active"}})
-        # cleanup
-        shutil.rmtree(tmp, ignore_errors=True)
+            import_resource(dataset_dict,
+                            resource_depot_path=path,
+                            sha256_sum=load_sha256sum(path))
     else:
         print("Skipping resource for {} (exists)".format(
-              dcor_dict["name"]), end="\r")
+              dataset_dict["name"]), end="\r")
+    # activate the dataset
+    package_revise = logic.get_action("package_revise")
+    package_revise(context=admin_context(),
+                   data_dict={"match": {"id": dataset_dict["id"]},
+                              "update": {"state": "active"}})
+
+
+def import_rtdc_prepare_condensed(rtdc_id, condensed_depot_path):
+    """
+    Create a link to the condensed file before importing any resources
+    (to avoid conflicts with automatic generation of condensed file)
+    """
+    rmpath = get_resource_path(rtdc_id, create_dirs=True)
+    # This path should not exist (checked above)
+    rmpath_c = rmpath.with_name(rmpath.name + "_condensed.rtdc")
+    assert not rmpath_c.exists(), "Should not exist: {}".format(rmpath_c)
+    rmpath_c.symlink_to(condensed_depot_path)
+
+
+def import_resource(dataset_dict, resource_depot_path, sha256_sum):
+    """Import a resource into a dataset
+
+    There is no internal upload happening, only a symlink to
+    `resource_depot_path` is created. The `sha256_sum` of the
+    `resource_depot_path` is necessary for reproducible resource
+    ID generation.
+    """
+    path = resource_depot_path
+    resource_create = logic.get_action("resource_create")
+    # import the resources
+    tmp = pathlib.Path(tempfile.mkdtemp(prefix="import_"))
+    print("  - importing {}".format(path))
+    # use dummy file (workaround for MemoryError during upload)
+    upath = tmp / path.name
+    with upath.open("wb") as fd:
+        fd.write(DUMMY_BYTES)
+    with upath.open("rb") as fd:
+        # This is a kind of hacky way of tricking CKAN into thinking
+        # that there is a file upload.
+        upload = cgi.FieldStorage()
+        upload.filename = path.name  # used in ResourceUpload
+        upload.file = fd  # used in ResourceUpload
+        upload.list.append(None)  # for boolean test in ResourceUpload
+        rs = resource_create(
+            context=admin_context(),
+            data_dict={
+                "id": make_id([dataset_dict["id"],
+                               path.name,
+                               sha256_sum]),
+                "package_id": dataset_dict["name"],
+                "upload": upload,
+                "name": path.name,
+                "sha256": sha256_sum,
+                "size": path.stat().st_size,
+                "format": mimetypes.guess_type(str(path))[0],
+            }
+        )
+    rpath = get_resource_path(rs["id"])
+    rpath.unlink()
+    rpath.symlink_to(path)
+    # make www-data the owner of the resource
+    www_uid = pwd.getpwnam("www-data").pw_uid
+    www_gid = grp.getgrnam("www-data").gr_gid
+    os.chown(rpath.parent, www_uid, www_gid)
+    os.chown(rpath.parent.parent, www_uid, www_gid)
+    # cleanup
+    shutil.rmtree(tmp, ignore_errors=True)
 
 
 def internal(limit=0, start_date="2000-01-01", end_date="3000-01-01"):
-    """Import internal datasets
+    """Import all internal datasets
 
     Parameters
     ----------
@@ -190,11 +219,34 @@ def internal(limit=0, start_date="2000-01-01", end_date="3000-01-01"):
     for ppsha in pathlib.Path(INTERNAL_DEPOT).rglob("*.sha256sums"):
         # Check whether the date matches
         ppdate = datetime.datetime.strptime(ppsha.name[:10], "%Y-%m-%d")
-        if ppdate >= start and ppdate <= end:
+        if start <= ppdate <= end:
             ii += 1
             import_dataset(ppsha)
             if limit and ii >= limit:
                 break
+
+
+def internal_upgrade(start_date="2000-01-01", end_date="3000-01-01"):
+    """Add new resource versions to internal datasets
+
+    Parameters
+    ----------
+    start_date: str
+        Only import datasets in the depot at or after this date
+        (format YYYY-MM-DD)
+    end_date: str
+        Only import datasets in the depot at or before this date
+    """
+
+    start = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+
+    # iterate through all files
+    for ppsha in pathlib.Path(INTERNAL_DEPOT).rglob("*.sha256sums"):
+        # Check whether the date matches
+        ppdate = datetime.datetime.strptime(ppsha.name[:10], "%Y-%m-%d")
+        if start <= ppdate <= end:
+            upgrade_dataset(ppsha)
 
 
 def make_dataset_dict(path):
@@ -226,3 +278,71 @@ def make_dataset_dict(path):
     dcor["notes"] = "The location of the original dataset is {}.".format(op)
     dcor["id"] = make_id([load_sha256sum(path), dcor["name"]])
     return dcor
+
+
+def upgrade_dataset(sha256_path):
+    root = sha256_path.parent
+    # actual files present
+    files_act = sorted(root.glob(sha256_path.name.split(".")[0]+"*"))
+    files_act = [ff for ff in files_act if not ff.suffix == ".sha256sums"]
+    # files registered in tha sha256sum
+    files_reg = sorted([root / pp.split()[1] for pp in
+                        sha256_path.read_text().split("\n") if pp])
+    if files_act != files_reg:
+        # find the new version
+        for ff in files_act:
+            if (ff.suffix == ".rtdc"
+                and not ff.name.count("condensed")
+                    and ff not in files_reg):
+                path_new = ff
+                sha256_new = sha_256(ff)
+                break
+        else:
+            raise ValueError(
+                "Could not find new version for {}!".format(sha256_path))
+        # first, create a condensed version
+        path_cond = path_new.with_name(path_new.stem + "_condensed.rtdc")
+        if path_cond.exists():
+            print("Recreating condensed dataset {}".format(path_cond))
+            path_cond.unlink()
+        else:
+            print("Creating condensed dataset {}".format(path_cond))
+
+        try:
+            cli.condense(path_out=path_cond, path_in=path_new)
+        except BaseException:
+            print("!! Condensing Error for {}".format(path_new))
+            sys.exit(1)
+        # now, append the resource to the dataset
+        dataset_name = "_".join(path_new.name.split("_")[:3])
+        package_show = logic.get_action("package_show")
+        dataset_dict = package_show(context=admin_context(),
+                                    data_dict={"id": dataset_name})
+
+        resource_show = logic.get_action("resource_show")
+        # Obtain the .rtdc resource identifier
+        # (ID is independent of _v1 string)
+        rtdc_id = make_id([dataset_dict["id"],
+                           path_new.name,
+                           sha256_new])
+        try:
+            resource_show(context=admin_context(), data_dict={"id": rtdc_id})
+        except logic.NotFound:
+            # make link to condensed  before importing the resource
+            # (to avoid conflicts with automatic generation of condensed file)
+            import_rtdc_prepare_condensed(rtdc_id, path_cond)
+            # import the resource
+            import_resource(dataset_dict,
+                            resource_depot_path=path_new,
+                            sha256_sum=sha256_new)
+        else:
+            print("Skipping resource for {} (exists)".format(
+                dataset_dict["name"]), end="\r")
+
+        # Finally, compute the sha256 sums and add them to the sum file.
+        sha256sums = {path_new.name: sha_256(path_new),
+                      path_cond.name: sha_256(path_cond)}
+        with sha256_path.open("r+") as fd:
+            fd.seek(0, 2)  # seek to end of file
+            for kk in sorted(sha256sums.keys()):
+                fd.write("{}  {}\n".format(sha256sums[kk], kk))

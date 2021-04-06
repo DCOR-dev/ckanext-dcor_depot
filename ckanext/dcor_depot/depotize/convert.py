@@ -175,7 +175,7 @@ def delete_stem(ddir, stem):
 
 
 def sha256(path):
-    return dclab.util.hashfile(path, hasher_class=hashlib.sha256)
+    return dclab.util.hashfile(path, constructor=hashlib.sha256)
 
 
 if __name__ == "__main__":

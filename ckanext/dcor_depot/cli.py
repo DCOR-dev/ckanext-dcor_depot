@@ -3,7 +3,7 @@ import click
 
 from .depotize import depotize
 from .figshare import figshare
-from .internal import internal
+from .internal import internal, internal_upgrade
 
 
 @click.command()
@@ -20,7 +20,7 @@ from .internal import internal
               help='Skip archives that failed in previous runs')
 @click.option('--verbosity', default=1, type=int,
               help='Increase for more verbosity')
-def depotize_archive(path, no_cleanup=False, ignore_unknown=True,
+def depotize_archive(path, no_cleanup=False, ignore_unknown=False,
                      skip_failed=False, verbosity=1):
     """Transform arbitrary RT-DC data to the DCOR depot file structure
 
@@ -80,6 +80,28 @@ def import_internal(limit, start_date="2000-01-01", end_date="3000-01-01"):
 
 
 @click.command()
+@click.option('--start-date', default="2000-01-01",
+              help='Search for upgraded resources in the depot starting '
+                   + 'from a given date')
+@click.option('--end-date', default="3000-01-01",
+              help='Search for upgraded resources in the depot '
+                   + 'only until a given date')
+def upgrade_internal(start_date="2000-01-01", end_date="3000-01-01"):
+    """Upgrade resource versions located in /data/depots/internal in CKAN
+
+    If you are running this command, you should have already created
+    new versions of resources (i.e. date-something_v2.rtdc next to
+    a date-something_v1.rtdc file).
+
+    During upgrade, the condensed version of the resource
+    (date-something_v2_condensed.rtdc) will be created and the SHA256
+    sums file will be updated. Then, the resource will be added to
+    the original dataset.
+    """
+    internal_upgrade(start_date=start_date, end_date=end_date)
+
+
+@click.command()
 def list_all_resources():
     """List all (public and private) resource ids"""
     datasets = model.Session.query(model.Package)
@@ -92,4 +114,5 @@ def get_commands():
     return [depotize_archive,
             import_figshare,
             import_internal,
+            upgrade_internal,
             list_all_resources]

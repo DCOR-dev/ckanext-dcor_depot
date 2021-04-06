@@ -1,6 +1,8 @@
+from functools import lru_cache
 import hashlib
 import pathlib
 
+import dclab
 
 #: Content of the dummy file created when importing data.
 DUMMY_BYTES = b"[Data import pending]"
@@ -37,13 +39,6 @@ def obj2str(obj):
                          format(obj.__class__))
 
 
+@lru_cache(maxsize=100)
 def sha_256(path, block_size=2**20):
-    path = pathlib.Path(path)
-    file_hash = hashlib.sha256()
-    with path.open("rb") as fd:
-        while True:
-            data = fd.read(block_size)
-            if not data:
-                break
-            file_hash.update(data)
-    return file_hash.hexdigest()
+    return dclab.util.hashfile(path, constructor=hashlib.sha256)
