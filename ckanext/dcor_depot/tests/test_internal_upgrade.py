@@ -73,17 +73,17 @@ def test_internal_upgrade(monkeypatch, ckan_config, tmpdir):
                                     id=computed_id)
     res_list = data_dict["resources"]
     namestem = pathlib.Path(stem).name
-    assert res_list[0]["name"] == namestem + "_v1.rtdc"
-    assert res_list[1]["name"] == namestem + "_ad1_m002_bg.png"
-    assert res_list[2]["name"] == namestem + "_ad2_m002_softwaresettings.ini"
-    assert res_list[3]["name"] == namestem + "_v2.rtdc"
+    assert res_list[0]["name"] == namestem + "_v2.rtdc"
+    assert res_list[1]["name"] == namestem + "_v1.rtdc"
+    assert res_list[2]["name"] == namestem + "_ad1_m002_bg.png"
+    assert res_list[3]["name"] == namestem + "_ad2_m002_softwaresettings.ini"
 
-    p0 = get_resource_path(res_list[0]["id"])
-    wait_for_resource(p0)
-    with h5py.File(p0, "r") as h5:
-        assert h5.attrs["experiment:sample"] == "calibration_beads"
-
-    p1 = get_resource_path(res_list[3]["id"])
+    p1 = get_resource_path(res_list[1]["id"])
     wait_for_resource(p1)
     with h5py.File(p1, "r") as h5:
+        assert h5.attrs["experiment:sample"] == "calibration_beads"
+
+    p2 = get_resource_path(res_list[0]["id"])
+    wait_for_resource(p2)
+    with h5py.File(p2, "r") as h5:
         assert h5.attrs["experiment:sample"] == "Thor!"

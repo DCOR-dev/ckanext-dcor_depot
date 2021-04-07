@@ -342,6 +342,12 @@ def upgrade_dataset(sha256_path):
             print("Skipping resource for {} (exists)".format(
                 dataset_dict["name"]), end="\r")
 
+        # Now make the new resource the first resource in the dataset
+        package_resource_reorder = logic.get_action("package_resource_reorder")
+        package_resource_reorder(context=admin_context(),
+                                 data_dict={"id": dataset_name,
+                                            "order": [rtdc_id]})
+
         # Finally, compute the sha256 sums and add them to the sum file.
         sha256sums = {path_new.name: sha_256(path_new),
                       path_cond.name: sha_256(path_cond)}
