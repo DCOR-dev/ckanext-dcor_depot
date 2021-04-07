@@ -58,7 +58,7 @@ def load_sha256sum(path):
     for line in sums:
         line = line.strip()
         if line:
-            ss, name = line.split("  ")
+            ss, name = line.split("  ", 1)
             if name == path.name:
                 return ss
     else:
