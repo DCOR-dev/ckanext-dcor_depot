@@ -88,7 +88,8 @@ def convert(pathtxt, verbose=1):
                                    "hash": hash0}
             copyfiles = []
             if len(files) > 1:
-                for jj, ff in enumerate(sorted(files[1:])):
+                adfiles = sorted(files[1:], key=lambda p: p.name.lower())
+                for jj, ff in enumerate(adfiles):
                     adi = (stem + "_ad{}_{}".format(jj + 1, ff.name.lower()))
                     cpp = ddir / adi
                     shutil.copyfile(ff, cpp)

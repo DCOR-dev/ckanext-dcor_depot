@@ -39,8 +39,8 @@ def create_internal_org():
         data_dict = {
             "name": INTERNAL_ORG,
             "description": u"Internal/archived datasets of the Guck "
-            + u"division. All datasets are private. If you are "
-            + u"missing a dataset, please contact Paul Müller.",
+                           + u"division. All datasets are private. If you are "
+                           + u"missing a dataset, please contact Paul Müller.",
             "title": "Guck Division Archive"
         }
         organization_create(context=admin_context(),
@@ -69,7 +69,10 @@ def import_dataset(sha256_path):
     """Import a dataset (all resources in sha256_path are added)"""
     # determine all relevant resources
     root = sha256_path.parent
-    files = sorted(root.glob(sha256_path.name.split(".")[0]+"*"))
+    files = sorted(root.glob(sha256_path.name.split(".")[0] + "*"),
+                   # rtdc files should come first
+                   key=(lambda p: "0000" + p.name
+                        if p.suffix == ".rtdc" else p.name))
 
     for ff in files:
         if ff.name.count("_condensed"):
@@ -125,7 +128,7 @@ def import_dataset(sha256_path):
                             sha256_sum=load_sha256sum(path))
     else:
         print("Skipping resource for {} (exists)".format(
-              dataset_dict["name"]), end="\r")
+            dataset_dict["name"]), end="\r")
     # activate the dataset
     package_revise = logic.get_action("package_revise")
     package_revise(context=admin_context(),
@@ -283,7 +286,7 @@ def make_dataset_dict(path):
 def upgrade_dataset(sha256_path):
     root = sha256_path.parent
     # actual files present
-    files_act = sorted(root.glob(sha256_path.name.split(".")[0]+"*"))
+    files_act = sorted(root.glob(sha256_path.name.split(".")[0] + "*"))
     files_act = [ff for ff in files_act if not ff.suffix == ".sha256sums"]
     # files registered in tha sha256sum
     files_reg = sorted([root / pp.split()[1] for pp in
@@ -292,7 +295,7 @@ def upgrade_dataset(sha256_path):
         # find the new version
         for ff in files_act:
             if (ff.suffix == ".rtdc"
-                and not ff.name.count("condensed")
+                    and not ff.name.count("condensed")
                     and ff not in files_reg):
                 path_new = ff
                 sha256_new = sha_256(ff)

@@ -49,14 +49,14 @@ def test_internal_import():
     shutil.copy2(data_path / name, path)
     depotize(path)
     # import
-    internal(start_date="2020-01-01", end_date="2021-01-24")
-    # check whether the datasets exist
+    internal(start_date="2020-01-01", end_date="2021-01-23")
+    # check whether the datasets exists
     admin = factories.Sysadmin()
     context = {'ignore_auth': True, 'user': admin['name']}
     # determine all dataset IDs
     for stem in depotized_data:
-        path = pathlib.Path(stem[:-1] + "_v1.rtdc")
-        computed_id = make_dataset_dict(path)["id"]
+        rpath = pathlib.Path(stem[:-1] + "_v1.rtdc")
+        computed_id = make_dataset_dict(rpath)["id"]
         dataset_name = stem.split("/")[-1].strip("*")
         data_dict = helpers.call_action("package_show", context,
                                         id=computed_id)
