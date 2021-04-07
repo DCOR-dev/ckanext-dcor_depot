@@ -289,7 +289,7 @@ def upgrade_dataset(sha256_path):
     files_act = sorted(root.glob(sha256_path.name.split(".")[0] + "*"))
     files_act = [ff for ff in files_act if not ff.suffix == ".sha256sums"]
     # files registered in tha sha256sum
-    files_reg = sorted([root / pp.split()[1] for pp in
+    files_reg = sorted([root / pp.split("  ", 1)[1] for pp in
                         sha256_path.read_text().split("\n") if pp])
     if files_act != files_reg:
         # find the new version

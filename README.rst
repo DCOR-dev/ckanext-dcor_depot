@@ -28,7 +28,7 @@ This plugin implements:
 
   ::
 
-     ckan -c /etc/ckan/default/ckan.ini import-figshare
+     ckan import-figshare
 
 
 - Populate an internal depot from RT-DC data stored in tar archives. This
@@ -51,7 +51,7 @@ This plugin implements:
 
   ::
 
-     ckan -c /etc/ckan/default/ckan.ini depotize-archive
+     ckan depotize-archive
 
 
 - Import datasets from the internal depot. The previous command
@@ -60,8 +60,16 @@ This plugin implements:
 
   ::
 
-     ckan -c /etc/ckan/default/ckan.ini import-internal
+     ckan import-internal
 
+
+- Upgrade datasets from the internal depot. If you find issues or have to add
+  new versions of an .rtdc resource, simply create the `_v2.rtdc` files and
+  run this command:
+
+  ::
+
+     ckan upgrade-internal
 
 Please make sure that the necessary file permissions are given in ``/data``. 
 
