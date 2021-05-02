@@ -62,3 +62,4 @@ def test_internal_import():
                                         id=computed_id)
         assert data_dict["name"] == dataset_name
         assert data_dict["id"] == computed_id
+        assert data_dict["state"] == "active"

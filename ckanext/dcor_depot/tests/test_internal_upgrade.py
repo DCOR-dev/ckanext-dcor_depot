@@ -72,6 +72,7 @@ def test_internal_upgrade(monkeypatch, ckan_config, tmpdir):
     data_dict = helpers.call_action("package_show", context,
                                     id=computed_id)
     res_list = data_dict["resources"]
+    assert data_dict["state"] == "active"
     namestem = pathlib.Path(stem).name
     assert res_list[0]["name"] == namestem + "_v2.rtdc"
     assert res_list[1]["name"] == namestem + "_v1.rtdc"
