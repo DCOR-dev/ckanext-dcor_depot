@@ -1,3 +1,6 @@
+0.9.3
+ - fix: initial dataset state should be "draft" and not "active"
+   for figshare and internal import
 0.9.2
  - setup: increment dclab version from 0.33.1 to 0.33.2
 0.9.1

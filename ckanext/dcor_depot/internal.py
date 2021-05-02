@@ -259,7 +259,7 @@ def make_dataset_dict(path):
     dcor["license_id"] = "none"
     stem = "_".join(path.name.split("_")[:3])
     dcor["name"] = stem
-    dcor["state"] = "active"
+    dcor["state"] = "draft"
     dcor["organization"] = {"id": INTERNAL_ORG}
 
     with dclab.new_dataset(path) as ds:

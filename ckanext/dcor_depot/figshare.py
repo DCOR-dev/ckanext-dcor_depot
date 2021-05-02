@@ -188,7 +188,7 @@ def map_figshare_to_dcor(figs):
     else:
         raise ValueError("Unknown license: {}".format(figs["license"]))
     dcor["title"] = figs["title"]
-    dcor["state"] = "active"
+    dcor["state"] = "draft"
     author_list = []
     for item in figs["authors"]:
         author_list.append(item["full_name"])
