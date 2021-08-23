@@ -13,7 +13,6 @@
   "M{RUN}_events.txt",
   "M{RUN}_log.ini",
   "M{RUN}_SoftwareSettings.ini",
-  "offline_analysis_parameters.txt",
   "parameters.txt",
   "photodet.dat",
   "{STEM}.tdms.log",
