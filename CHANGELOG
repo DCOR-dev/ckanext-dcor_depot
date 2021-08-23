@@ -1,3 +1,5 @@
+0.9.4
+ - enh: update depotize ignore/accept list
 0.9.3
  - fix: initial dataset state should be "draft" and not "active"
    for figshare and internal import
