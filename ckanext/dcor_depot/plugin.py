@@ -22,10 +22,10 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
         usr_id = pkg["creator_user_id"]
         usr = toolkit.get_action('user_show')(context, {'id': usr_id})
         # resource path
-        jid = "-".join([resource["id"], resource["name"], "symlink"])
+        pkg_job_id = f"{resource['package_id']}_{resource['position']}_"
         toolkit.enqueue_job(symlink_user_dataset,
                             [pkg, usr, resource],
                             title="Move and symlink user dataset",
                             queue="dcor-short",
                             rq_kwargs={"timeout": 60,
-                                       "job_id": jid})
+                                       "job_id": pkg_job_id + "symlink"})
