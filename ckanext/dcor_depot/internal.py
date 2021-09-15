@@ -291,12 +291,13 @@ def upgrade_dataset(sha256_path):
     # files registered in tha sha256sum
     files_reg = sorted([root / pp.split("  ", 1)[1] for pp in
                         sha256_path.read_text().split("\n") if pp])
+    # restrict search to .rtdc files
+    files_act = [ff for ff in files_act if ff.suffix == ".rtdc"]
+    files_reg = [ff for ff in files_reg if ff.suffix == ".rtdc"]
     if files_act != files_reg:
         # find the new version
         for ff in files_act:
-            if (ff.suffix == ".rtdc"
-                    and not ff.name.count("condensed")
-                    and ff not in files_reg):
+            if not ff.name.count("condensed") and ff not in files_reg:
                 path_new = ff
                 sha256_new = sha_256(ff)
                 break

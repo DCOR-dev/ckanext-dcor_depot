@@ -144,7 +144,7 @@ def convert(pathtxt, verbose=1):
                 dclab.rtdc_dataset.write(path_or_h5file=h5,
                                          logs={"dcor-history": dclog},
                                          mode="append")
-            # condense path_out to path_out_min
+            # condense path_out to path_out_cond
             try:
                 cli.condense(path_out=path_out_cond, path_in=path_out)
             except KeyboardInterrupt:

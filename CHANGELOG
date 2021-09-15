@@ -1,3 +1,6 @@
+0.9.7
+ - fix: upgrade_internal CLI did not work if non-.rtdc files
+   (e.g. unimportant images) were missing
 0.9.6
  - ref: change background job ID to "{package_id}_{position}_symlink"
 0.9.5
