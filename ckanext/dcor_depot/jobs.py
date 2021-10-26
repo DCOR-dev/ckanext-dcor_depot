@@ -10,7 +10,7 @@ def symlink_user_dataset(pkg, usr, resource):
     """Symlink resource data to human-readable depot"""
     path = get_resource_path(resource["id"])
     org = pkg["organization"]["name"]
-    if org in MANUAL_DEPOT_ORGS:
+    if org in MANUAL_DEPOT_ORGS or path.is_symlink():
         # nothing to do (skip, because already symlinked)
         return
     user = usr["name"]

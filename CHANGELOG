@@ -1,3 +1,5 @@
+0.9.8
+ - fix: support calling symlink_user_dataset twice
 0.9.7
  - fix: upgrade_internal CLI did not work if non-.rtdc files
    (e.g. unimportant images) were missing
