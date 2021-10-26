@@ -25,6 +25,15 @@ def symlink_user_dataset(pkg, usr, resource):
     if not depot_path.parent.exists():
         depot_path.parent.mkdir(exist_ok=True, parents=True)
     # move file to depot and create symlink back
-    path = pathlib.Path(path)
-    path.rename(depot_path)
-    path.symlink_to(depot_path)
+    try:
+        path.rename(depot_path)
+    except FileNotFoundError:
+        # somebody else was faster (avoid race conditions)
+        if not depot_path.exists():
+            raise
+    try:
+        path.symlink_to(depot_path)
+    except FileNotFoundError:
+        # somebody else was faster (avoid race conditions)
+        if not path.is_symlink():
+            raise
