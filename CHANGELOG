@@ -1,3 +1,5 @@
+0.9.10
+ - tests: run background jobs in correct order
 0.9.9
  - fix: avoid race conditions during symlinking
 0.9.8

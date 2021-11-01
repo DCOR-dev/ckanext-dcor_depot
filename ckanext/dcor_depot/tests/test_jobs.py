@@ -34,7 +34,10 @@ def synchronous_enqueue_job(job_func, args=None, kwargs=None, title=None,
     job_func(*args, **kwargs)
 
 
-@pytest.mark.ckan_config('ckan.plugins', 'dcor_schemas dcor_depot')
+# dcor_depot must come first, because jobs are run in sequence and the
+# symlink_user_dataset jobs must be executed first so that dcor_schemas
+# does not complain about resources not available in wait_for_resource.
+@pytest.mark.ckan_config('ckan.plugins', 'dcor_depot dcor_schemas')
 @pytest.mark.usefixtures('clean_db', 'with_request_context')
 @mock.patch('ckan.plugins.toolkit.enqueue_job',
             side_effect=synchronous_enqueue_job)
@@ -53,6 +56,7 @@ def test_symlink_user_dataset(enqueue_job_mock, create_with_upload,
     create_context = {'ignore_auth': False, 'user': user['name']}
     dataset = make_dataset(create_context, owner_org, with_resource=False,
                            activate=False)
+
     content = (data_dir / "calibration_beads_47.rtdc").read_bytes()
     result = create_with_upload(
         content, 'test.rtdc',
@@ -60,6 +64,7 @@ def test_symlink_user_dataset(enqueue_job_mock, create_with_upload,
         package_id=dataset["id"],
         context=create_context,
     )
+
     resource = helpers.call_action("resource_show", id=result["id"])
     rpath = dcor_shared.get_resource_path(result["id"])
     assert rpath.exists()
