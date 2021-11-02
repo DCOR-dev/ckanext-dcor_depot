@@ -1,3 +1,5 @@
+0.9.11
+ - fix: prevent enqueueing of same background job twice
 0.9.10
  - tests: run background jobs in correct order
 0.9.9

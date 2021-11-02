@@ -1,5 +1,6 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
+from rq.job import Job
 
 from .cli import get_commands
 from .jobs import symlink_user_dataset
@@ -23,9 +24,11 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
         usr = toolkit.get_action('user_show')(context, {'id': usr_id})
         # resource path
         pkg_job_id = f"{resource['package_id']}_{resource['position']}_"
-        toolkit.enqueue_job(symlink_user_dataset,
-                            [pkg, usr, resource],
-                            title="Move and symlink user dataset",
-                            queue="dcor-short",
-                            rq_kwargs={"timeout": 60,
-                                       "job_id": pkg_job_id + "symlink"})
+        jid_symlink = pkg_job_id + "symlink"
+        if not Job.exists(jid_symlink):
+            toolkit.enqueue_job(symlink_user_dataset,
+                                [pkg, usr, resource],
+                                title="Move and symlink user dataset",
+                                queue="dcor-short",
+                                rq_kwargs={"timeout": 60,
+                                           "job_id": jid_symlink})
