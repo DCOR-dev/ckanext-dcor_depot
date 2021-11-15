@@ -1,3 +1,5 @@
+0.10.1
+ - fix: CLI run_jobs_dcor_depot not correctly implemented
 0.10.0
  - feat: add CLI run_jobs_dcor_depot
 0.9.12

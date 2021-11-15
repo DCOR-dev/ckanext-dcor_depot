@@ -1,6 +1,7 @@
 import datetime
 import time
 
+import ckan.logic as logic
 import ckan.model as model
 import click
 
@@ -143,10 +144,13 @@ def run_jobs_dcor_depot(modified_days=-1):
         nl = False
         click.echo(f"Checking dataset {dataset.id}\r", nl=False)
         usr_id = dataset.creator_user_id
+        ds_dict = dataset.as_dict()
+        ds_dict["organization"] = logic.get_action("organization_show")(
+                {'ignore_auth': True}, {"id": dataset.owner_org})
         for resource in dataset.resources:
             res_dict = resource.as_dict()
             try:
-                if jobs.symlink_user_dataset(pkg=dataset,
+                if jobs.symlink_user_dataset(pkg=ds_dict,
                                              usr={"name": usr_id},
                                              resource=res_dict):
                     click_echo(f"Created symlink for {resource.name}", nl)
