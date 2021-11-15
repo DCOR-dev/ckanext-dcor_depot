@@ -1,3 +1,5 @@
+0.10.0
+ - feat: add CLI run_jobs_dcor_depot
 0.9.12
  - fix: add redis connection
 0.9.11

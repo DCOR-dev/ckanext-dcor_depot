@@ -71,6 +71,13 @@ This plugin implements:
 
      ckan upgrade-internal
 
+- CLI for symlinking datasets that have failed to symlink before:
+
+  ::
+
+     ckan run-jobs-dcor-depot
+
+
 Please make sure that the necessary file permissions are given in ``/data``. 
 
 

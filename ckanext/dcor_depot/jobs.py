@@ -12,7 +12,7 @@ def symlink_user_dataset(pkg, usr, resource):
     org = pkg["organization"]["name"]
     if org in MANUAL_DEPOT_ORGS or path.is_symlink():
         # nothing to do (skip, because already symlinked)
-        return
+        return False
     user = usr["name"]
     # depot path
     depot_path = (pathlib.Path(USER_DEPOT)
@@ -24,6 +24,9 @@ def symlink_user_dataset(pkg, usr, resource):
                                       resource["name"]))
     if not depot_path.parent.exists():
         depot_path.parent.mkdir(exist_ok=True, parents=True)
+
+    symlinked = True
+
     # move file to depot and create symlink back
     try:
         path.rename(depot_path)
@@ -31,9 +34,16 @@ def symlink_user_dataset(pkg, usr, resource):
         # somebody else was faster (avoid race conditions)
         if not depot_path.exists():
             raise
+        else:
+            symlinked = False
+
     try:
         path.symlink_to(depot_path)
     except FileNotFoundError:
         # somebody else was faster (avoid race conditions)
         if not path.is_symlink():
             raise
+        else:
+            symlinked = False
+
+    return symlinked

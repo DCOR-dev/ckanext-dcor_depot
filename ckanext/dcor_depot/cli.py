@@ -1,9 +1,19 @@
+import datetime
+import time
+
 import ckan.model as model
 import click
 
 from .depotize import depotize
 from .figshare import figshare
 from .internal import internal, internal_upgrade
+from . import jobs
+
+
+def click_echo(message, am_on_a_new_line):
+    if not am_on_a_new_line:
+        click.echo("")
+    click.echo(message)
 
 
 @click.command()
@@ -110,9 +120,52 @@ def list_all_resources():
             click.echo(resource.id)
 
 
+@click.option('--modified-days', default=-1,
+              help='Only run for datasets modified within this number of days '
+                   + 'in the past. Set to -1 to apply to all datasets.')
+@click.command()
+def run_jobs_dcor_depot(modified_days=-1):
+    """Compute condensed resource all .rtdc files
+
+    This also happens for draft datasets.
+    """
+    # go through all datasets
+    datasets = model.Session.query(model.Package)
+
+    if modified_days >= 0:
+        # Search only the last `days` days.
+        past = datetime.date.today() - datetime.timedelta(days=modified_days)
+        past_str = time.strftime("%Y-%m-%d", past.timetuple())
+        datasets = datasets.filter(model.Package.metadata_modified >= past_str)
+
+    nl = False  # new line character
+    for dataset in datasets:
+        nl = False
+        click.echo(f"Checking dataset {dataset.id}\r", nl=False)
+        usr_id = dataset.creator_user_id
+        for resource in dataset.resources:
+            res_dict = resource.as_dict()
+            try:
+                if jobs.symlink_user_dataset(pkg=dataset,
+                                             usr={"name": usr_id},
+                                             resource=res_dict):
+                    click_echo(f"Created symlink for {resource.name}", nl)
+                    nl = True
+            except KeyboardInterrupt:
+                raise
+            except BaseException as e:
+                click_echo(
+                    f"{e.__class__.__name__}: {e} for {resource.name}", nl)
+                nl = True
+    if not nl:
+        click.echo("")
+    click.echo("Done!")
+
+
 def get_commands():
     return [depotize_archive,
             import_figshare,
             import_internal,
             upgrade_internal,
+            run_jobs_dcor_depot,
             list_all_resources]
