@@ -219,7 +219,7 @@ def internal(limit=0, start_date="2000-01-01", end_date="3000-01-01"):
 
     # iterate through all files
     ii = 0
-    for ppsha in pathlib.Path(INTERNAL_DEPOT).rglob("*.sha256sums"):
+    for ppsha in INTERNAL_DEPOT.rglob("*.sha256sums"):
         # Check whether the date matches
         ppdate = datetime.datetime.strptime(ppsha.name[:10], "%Y-%m-%d")
         if start <= ppdate <= end:
@@ -245,7 +245,7 @@ def internal_upgrade(start_date="2000-01-01", end_date="3000-01-01"):
     end = datetime.datetime.strptime(end_date, "%Y-%m-%d")
 
     # iterate through all files
-    for ppsha in pathlib.Path(INTERNAL_DEPOT).rglob("*.sha256sums"):
+    for ppsha in INTERNAL_DEPOT.rglob("*.sha256sums"):
         # Check whether the date matches
         ppdate = datetime.datetime.strptime(ppsha.name[:10], "%Y-%m-%d")
         if start <= ppdate <= end:

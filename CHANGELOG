@@ -1,3 +1,6 @@
+0.10.3
+ - ref: use more stable paths from dcor_shared
+ - setup: bump dcor_shared from 0.2.0 to 0.3.0
 0.10.2
  - maintenance release
 0.10.1

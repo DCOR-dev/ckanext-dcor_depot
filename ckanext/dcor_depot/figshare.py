@@ -102,7 +102,7 @@ def import_dataset(doi):
         print("Skipping creation of {} (exists)".format(dcor_dict["name"]))
 
     # Download/Import the resources
-    dldir = pathlib.Path(FIGSHARE_DEPOT) / dcor_dict["name"]
+    dldir = FIGSHARE_DEPOT / dcor_dict["name"]
     dldir.mkdir(parents=True, exist_ok=True)
 
     resource_create = logic.get_action("resource_create")

@@ -1,5 +1,3 @@
-import pathlib
-
 from dcor_shared import get_resource_path
 
 from .orgs import MANUAL_DEPOT_ORGS
@@ -15,7 +13,7 @@ def symlink_user_dataset(pkg, usr, resource):
         return False
     user = usr["name"]
     # depot path
-    depot_path = (pathlib.Path(USER_DEPOT)
+    depot_path = (USER_DEPOT
                   / (user + "-" + org)
                   / pkg["id"][:2]
                   / pkg["id"][2:4]
