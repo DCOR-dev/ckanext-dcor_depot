@@ -16,14 +16,14 @@ if __name__ == "__main__":
     # allow to be run as script for testing
     _pathtxt = pathlib.Path(sys.argv[-1])
     assert _pathtxt.exists()
-    INTERNAL_DEPOT = str(_pathtxt.parent / "internal")
+    INTERNAL_DEPOT = _pathtxt.parent / "internal"
     version = "test"
 else:
     from ..paths import INTERNAL_DEPOT
     from .._version import version
 
 
-DATA_DIR = INTERNAL_DEPOT + "/{YYY}X/{YYYY}-{MM}/{DD}"
+DATA_DIR = str(INTERNAL_DEPOT) + "/{YYY}X/{YYYY}-{MM}/{DD}"
 NAME_STEM = "{YYYY}-{MM}-{DD}_{t}_{hex}"
 
 
