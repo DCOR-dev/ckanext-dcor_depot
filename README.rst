@@ -78,6 +78,14 @@ This plugin implements:
      ckan run-jobs-dcor-depot
 
 
+- CLI for appending a resource to a dataset
+
+  ::
+
+     ckan append-resource
+
+
+
 Please make sure that the necessary file permissions are given in ``/data``. 
 
 

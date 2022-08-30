@@ -1,10 +1,12 @@
 import datetime
+import pathlib
 import time
 
 import ckan.logic as logic
 import ckan.model as model
 import click
 
+from . import app_res
 from .depotize import depotize
 from .figshare import figshare
 from .internal import internal, internal_upgrade
@@ -15,6 +17,27 @@ def click_echo(message, am_on_a_new_line):
     if not am_on_a_new_line:
         click.echo("")
     click.echo(message)
+
+
+@click.command()
+@click.argument('path')
+@click.argument('dataset_id')
+@click.option('--delete-source', is_flag=True,
+              help='Delete the original local file')
+def append_resource(path, dataset_id, delete_source=False):
+    """Append a resource to a dataset
+
+    This can be done even after the dataset is made active.
+    It can be used to e.g. append post-processed RT-DC data to an
+    existing dataset.
+
+    Pass the path `path` to a resource, and it will be added to the
+    specified `dataset_id` (id or name).
+    """
+    path = pathlib.Path(path)
+    app_res.append_resource(path=path,
+                            dataset_id=dataset_id,
+                            copy=not delete_source)
 
 
 @click.command()
@@ -167,7 +190,8 @@ def upgrade_internal(start_date="2000-01-01", end_date="3000-01-01"):
 
 
 def get_commands():
-    return [depotize_archive,
+    return [append_resource,
+            depotize_archive,
             import_figshare,
             import_internal,
             list_all_resources,

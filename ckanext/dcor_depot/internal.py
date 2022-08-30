@@ -148,39 +148,43 @@ def import_rtdc_prepare_condensed(rtdc_id, condensed_depot_path):
     rmpath_c.symlink_to(condensed_depot_path)
 
 
-def import_resource(dataset_dict, resource_depot_path, sha256_sum):
+def import_resource(dataset_dict, resource_depot_path, sha256_sum,
+                    resource_name=None):
     """Import a resource into a dataset
 
     There is no internal upload happening, only a symlink to
     `resource_depot_path` is created. The `sha256_sum` of the
     `resource_depot_path` is necessary for reproducible resource
     ID generation.
+
+    If `resource_name` is set, then this name is used
     """
     path = resource_depot_path
+    path_name = resource_name or path.name
     resource_create = logic.get_action("resource_create")
     # import the resources
     tmp = pathlib.Path(tempfile.mkdtemp(prefix="import_"))
     print("  - importing {}".format(path))
     # use dummy file (workaround for MemoryError during upload)
-    upath = tmp / path.name
+    upath = tmp / path_name
     with upath.open("wb") as fd:
         fd.write(DUMMY_BYTES)
     with upath.open("rb") as fd:
         # This is a kind of hacky way of tricking CKAN into thinking
         # that there is a file upload.
         upload = cgi.FieldStorage()
-        upload.filename = path.name  # used in ResourceUpload
+        upload.filename = path_name  # used in ResourceUpload
         upload.file = fd  # used in ResourceUpload
         upload.list.append(None)  # for boolean test in ResourceUpload
         rs = resource_create(
             context=admin_context(),
             data_dict={
                 "id": make_id([dataset_dict["id"],
-                               path.name,
+                               path_name,
                                sha256_sum]),
                 "package_id": dataset_dict["name"],
                 "upload": upload,
-                "name": path.name,
+                "name": path_name,
                 "sha256": sha256_sum,
                 "size": path.stat().st_size,
                 "format": mimetypes.guess_type(str(path))[0],

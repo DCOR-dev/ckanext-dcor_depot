@@ -1,3 +1,5 @@
+0.11.0
+ - feat: add CLI command `append-resource` for adding resources to datasets
 0.10.3
  - ref: use more stable paths from dcor_shared
  - setup: bump dcor_shared from 0.2.0 to 0.3.0
