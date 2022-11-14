@@ -82,7 +82,7 @@ This plugin implements:
 
   ::
 
-     ckan append-resource
+     ckan append-resource /path/to/file dataset_id --delete-source
 
 
 
