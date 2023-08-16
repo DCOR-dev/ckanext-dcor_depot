@@ -140,10 +140,8 @@ def convert(pathtxt, verbose=1):
             # append dcor history log file
             dcdump = {"v1": dcor_hist}
             dclog = json.dumps(dcdump, sort_keys=True, indent=2).split("\n")
-            with h5py.File(path_out, "a") as h5:
-                dclab.rtdc_dataset.write(path_or_h5file=h5,
-                                         logs={"dcor-history": dclog},
-                                         mode="append")
+            with dclab.RTDCWriter(path_out, mode="append") as hw:
+                hw.store_log("dcor-history", dclog)
             # condense path_out to path_out_cond
             try:
                 cli.condense(path_out=path_out_cond, path_in=path_out)
