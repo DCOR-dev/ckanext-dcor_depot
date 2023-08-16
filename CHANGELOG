@@ -1,3 +1,5 @@
+0.12.0
+ - ref: migrate to CKAN 2.10
 0.11.0
  - feat: add CLI command `append-resource` for adding resources to datasets
 0.10.3

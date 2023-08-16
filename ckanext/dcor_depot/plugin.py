@@ -16,7 +16,7 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
         return get_commands()
 
     # IResourceController
-    def after_create(self, context, resource):
+    def after_resource_create(self, context, resource):
         # check organization
         pkg_id = resource["package_id"]
         pkg = toolkit.get_action('package_show')(context, {'id': pkg_id})
