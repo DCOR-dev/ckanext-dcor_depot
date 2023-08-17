@@ -1,11 +1,9 @@
-import mock
 import pathlib
 import shutil
 
 from ckanext.dcor_depot.depotize import depotize
 from ckanext.dcor_depot.internal import internal, make_dataset_dict
 
-import ckan.lib
 import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
 

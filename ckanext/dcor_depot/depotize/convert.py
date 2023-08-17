@@ -9,7 +9,6 @@ import dclab
 from dclab import cli
 from dclab.rtdc_dataset import fmt_tdms
 from dclab.rtdc_dataset.export import LimitingExportSizeWarning
-import h5py
 
 
 if __name__ == "__main__":
