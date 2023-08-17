@@ -164,10 +164,10 @@ def import_dataset(doi):
             os.chown(rpath.parent, www_uid, www_gid)
             os.chown(rpath.parent.parent, www_uid, www_gid)
     # activate the dataset
-    package_revise = logic.get_action("package_revise")
-    package_revise(context=admin_context(),
-                   data_dict={"match": {"id": dcor_dict["id"]},
-                              "update": {"state": "active"}})
+    package_patch = logic.get_action("package_patch")
+    package_patch(context=admin_context(),
+                  data_dict={"id": dcor_dict["id"],
+                             "state": "active"})
     print("Done.")
 
 

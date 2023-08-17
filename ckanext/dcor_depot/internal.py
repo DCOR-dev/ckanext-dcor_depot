@@ -130,10 +130,10 @@ def import_dataset(sha256_path):
         print("Skipping resource for {} (exists)".format(
             dataset_dict["name"]), end="\r")
     # activate the dataset
-    package_revise = logic.get_action("package_revise")
-    package_revise(context=admin_context(),
-                   data_dict={"match": {"id": dataset_dict["id"]},
-                              "update": {"state": "active"}})
+    package_patch = logic.get_action("package_patch")
+    package_patch(context=admin_context(),
+                  data_dict={"id": dataset_dict["id"],
+                             "state": "active"})
 
 
 def import_rtdc_prepare_condensed(rtdc_id, condensed_depot_path):

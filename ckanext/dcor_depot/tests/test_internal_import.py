@@ -1,10 +1,11 @@
+import mock
 import pathlib
 import shutil
-import tempfile
 
 from ckanext.dcor_depot.depotize import depotize
 from ckanext.dcor_depot.internal import internal, make_dataset_dict
 
+import ckan.lib
 import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
 
@@ -41,16 +42,18 @@ def run_around_tests():
 
 @pytest.mark.ckan_config('ckan.plugins', 'dcor_depot dcor_schemas dc_view')
 @pytest.mark.usefixtures('clean_db', 'with_request_context')
-def test_internal_import():
+# We are not applying the synchronous run of jobs, because this would
+# cause a dead lock (waiting for symlinks).
+def test_internal_import(monkeypatch, tmpdir):
     """depotize and import"""
     # depotize
     name = "depotize_archive_20210123.tar.gz"
-    path = pathlib.Path(tempfile.mkdtemp()) / name
+    path = tmpdir / name
     shutil.copy2(data_path / name, path)
     depotize(path)
     # import
     internal(start_date="2020-01-01", end_date="2021-01-23")
-    # check whether the datasets exists
+    # check whether the datasets exist
     admin = factories.Sysadmin()
     context = {'ignore_auth': True, 'user': admin['name']}
     # determine all dataset IDs

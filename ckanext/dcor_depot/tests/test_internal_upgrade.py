@@ -47,7 +47,9 @@ def run_around_tests():
 def test_internal_upgrade(monkeypatch, ckan_config, tmpdir):
     """depotize and import"""
     monkeypatch.setitem(ckan_config, 'ckan.storage_path', str(tmpdir))
-    monkeypatch.setattr(ckan.lib.uploader, '_storage_path', str(tmpdir))
+    monkeypatch.setattr(ckan.lib.uploader,
+                        'get_storage_path',
+                        lambda: str(tmpdir))
     # depotize
     name = "depotize_archive_20210123.tar.gz"
     path = pathlib.Path(tempfile.mkdtemp()) / name

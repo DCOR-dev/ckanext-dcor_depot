@@ -20,8 +20,8 @@ def symlink_user_dataset(pkg, usr, resource):
                   / "{}_{}_{}".format(pkg["name"],
                                       resource["id"],
                                       resource["name"]))
-    if not depot_path.parent.exists():
-        depot_path.parent.mkdir(exist_ok=True, parents=True)
+
+    depot_path.parent.mkdir(exist_ok=True, parents=True)
 
     symlinked = True
 
