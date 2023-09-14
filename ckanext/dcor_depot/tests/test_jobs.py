@@ -16,6 +16,7 @@ import ckan.lib
 import ckan.tests.factories as factories
 from ckan.tests import helpers
 
+import ckanext.dcor_schemas.plugin
 import dcor_shared
 
 from .helper_methods import make_dataset
@@ -49,6 +50,10 @@ def test_symlink_user_dataset(enqueue_job_mock, create_with_upload,
     monkeypatch.setattr(ckan.lib.uploader,
                         'get_storage_path',
                         lambda: str(tmpdir))
+    monkeypatch.setattr(
+        ckanext.dcor_schemas.plugin,
+        'DISABLE_AFTER_DATASET_CREATE_FOR_CONCURRENT_JOB_TESTS',
+        True)
 
     user = factories.User()
     owner_org = factories.Organization(users=[{
