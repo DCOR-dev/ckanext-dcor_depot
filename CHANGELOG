@@ -1,3 +1,5 @@
+0.12.1
+ - ref: cleanup jobs
 0.12.0
  - ref: migrate to CKAN 2.10
  - fix: convert used deprecated dclab.rtdc_dataset.write module
