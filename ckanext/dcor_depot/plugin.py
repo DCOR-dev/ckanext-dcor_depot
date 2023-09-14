@@ -1,4 +1,4 @@
-import ckan.lib.jobs as ckan_jobs
+from ckan.lib.jobs import _connect as ckan_jobs_connect
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from rq.job import Job
@@ -26,10 +26,10 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
         # resource path
         pkg_job_id = f"{resource['package_id']}_{resource['position']}_"
         jid_symlink = pkg_job_id + "symlink"
-        if not Job.exists(jid_symlink, connection=ckan_jobs._connect()):
-            ckan_jobs.enqueue(symlink_user_dataset,
-                              [pkg, usr, resource],
-                              title="Move and symlink user dataset",
-                              queue="dcor-short",
-                              rq_kwargs={"timeout": 60,
-                                         "job_id": jid_symlink})
+        if not Job.exists(jid_symlink, connection=ckan_jobs_connect()):
+            toolkit.enqueue_job(symlink_user_dataset,
+                                [pkg, usr, resource],
+                                title="Move and symlink user dataset",
+                                queue="dcor-short",
+                                rq_kwargs={"timeout": 60,
+                                           "job_id": jid_symlink})
