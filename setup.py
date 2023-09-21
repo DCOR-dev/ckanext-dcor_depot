@@ -44,7 +44,7 @@ setup(
         # the "ckan" dependency is implied
         "click",
         "dclab>=0.52.0",
-        "dcor_shared>0.4.2",
+        "dcor_shared>=0.4.2",
         "h5py",
         "html2text==2019.8.11",
         "numpy",
