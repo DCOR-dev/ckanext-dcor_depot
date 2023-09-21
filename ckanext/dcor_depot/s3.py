@@ -1,8 +1,10 @@
 import functools
+import hashlib
+import pathlib
 
 import boto3
 
-from dcor_shared import get_ckan_config_option
+from dcor_shared import get_ckan_config_option, sha256sum
 
 
 @functools.lru_cache()
@@ -52,6 +54,7 @@ def require_bucket(bucket_name):
 
 
 def upload_file(bucket_name, object_name, path, sha256, private=True):
+    s3_client, _, _ = get_s3()
     s3_bucket = require_bucket(bucket_name)
     s3_bucket.upload_file(Filename=str(path),
                           Key=object_name,
@@ -63,3 +66,23 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
                               # This is not supported in MinIO:
                               # "ChecksumSHA256": sha256
                           })
+    # Make sure the upload worked properly by computing the SHA256 sum.
+    # Download the file directly into the hasher.
+    hasher = hashlib.sha256()
+    increment = 2**20
+    start_byte = 0
+    max_size = pathlib.Path(path).stat().st_size
+    stop_byte = min(increment, max_size)
+    while start_byte < max_size:
+        resp = s3_client.get_object(Bucket=bucket_name,
+                                    Key=object_name,
+                                    Range=f"bytes={start_byte}-{stop_byte}")
+        content = resp['Body'].read()
+        if not content:
+            break
+        hasher.update(content)
+        start_byte = stop_byte
+        stop_byte = min(max_size, stop_byte + increment)
+    s3_sha256 = hasher.hexdigest()
+    if sha256 != s3_sha256:
+        raise ValueError("Checksums don't match!")
