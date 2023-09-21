@@ -260,6 +260,7 @@ def upgrade_internal(start_date="2000-01-01", end_date="3000-01-01"):
 
 def get_commands():
     return [append_resource,
+            dcor_migrate_resources_to_object_store,
             depotize_archive,
             import_figshare,
             import_internal,
