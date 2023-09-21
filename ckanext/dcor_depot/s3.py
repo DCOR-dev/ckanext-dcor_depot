@@ -6,23 +6,30 @@ from dcor_shared import get_ckan_config_option
 
 
 @functools.lru_cache()
-def get_s3_client():
+def get_s3():
     """Return the current S3 client as defined by ckan.ini"""
     # Create a new session (do not use the default session)
-    session = boto3.Session()
-    ssl_verify = get_ckan_config_option(
-        "dcor_object_store.ssl_verify").lower() == "true"
-    s3_client = session.client(
-        service_name='s3',
-        use_ssl=ssl_verify,
-        verify=ssl_verify,
-        endpoint_url=get_ckan_config_option("dcor_object_store.endpoint_url"),
+    s3_session = boto3.Session(
         aws_access_key_id=get_ckan_config_option(
             "dcor_object_store.access_key_id"),
         aws_secret_access_key=get_ckan_config_option(
             "dcor_object_store.secret_access_key"),
     )
-    return s3_client
+    ssl_verify = get_ckan_config_option(
+        "dcor_object_store.ssl_verify").lower() == "true"
+    s3_client = s3_session.client(
+        service_name='s3',
+        use_ssl=ssl_verify,
+        verify=ssl_verify,
+        endpoint_url=get_ckan_config_option("dcor_object_store.endpoint_url"),
+    )
+    s3_resource = s3_session.resource(
+        service_name="s3",
+        use_ssl=ssl_verify,
+        verify=ssl_verify,
+        endpoint_url=get_ckan_config_option("dcor_object_store.endpoint_url"),
+    )
+    return s3_client, s3_session, s3_resource
 
 
 @functools.lru_cache()
@@ -34,11 +41,13 @@ def require_bucket(bucket_name):
     bucket_name: str
         Bucket to create
     """
-    s3_client = get_s3_client()
+    _, _, s3_resource = get_s3_client()
     # Create the bucket (this will return the bucket if it already exists)
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/
     # services/s3/client/create_bucket.html
-    s3_bucket = s3_client.create_bucket(Bucket=bucket_name)
+    s3_bucket = s3_resource.Bucket(bucket_name)
+    if s3_bucket.creation_date is None:
+        s3_bucket.create()
     return s3_bucket
 
 
