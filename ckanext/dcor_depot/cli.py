@@ -71,28 +71,39 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
         click.echo(f"Migrating dataset {dataset.id}\r", nl=False)
         ds_dict = dataset.as_dict()
         ds_dict["organization"] = logic.get_action("organization_show")(
-                {'ignore_auth': True}, {"id": dataset.owner_org})
+                context={"ignore_auth": True},
+                data_dict={"id": dataset.owner_org})
         for resource in dataset.resources:
             res_dict = resource.as_dict()
-            if res_dict.get("s3_available"):
-                # The resource has already been uploaded to S3, and the
-                # SHA256 sum has also been verified.
-                continue
-            # Get bucket and object names
-            store = get_ckan_config_option(
-                "dcor_object_store.storage_pattern").format(
-                organization_id=ds_dict["id"],
-                resource_id=res_dict["id"]
-            )
-            bucket_name, object_name = store.split(":")
-            # Upload the resource to S3
-            s3.upload_file(bucket_name=bucket_name,
-                           object_name=object_name,
-                           path=str(get_resource_path(res_dict["id"])),
-                           sha256=res_dict.get("sha256"),
-                           private=ds_dict["private"])
-            click_echo(f"Uploaded resource {resource.name}", nl)
-            nl = True
+            if not res_dict.get("s3_available"):
+                # Get bucket and object names
+                store = get_ckan_config_option(
+                    "dcor_object_store.storage_pattern").format(
+                    organization_id=ds_dict["id"],
+                    resource_id=res_dict["id"]
+                )
+                bucket_name, object_name = store.split(":")
+                # Upload the resource to S3
+                s3_url = s3.upload_file(
+                    bucket_name=bucket_name,
+                    object_name=object_name,
+                    path=str(get_resource_path(res_dict["id"])),
+                    sha256=res_dict.get("sha256"),
+                    private=ds_dict["private"])
+                # Update the resource dictionary
+                res_update_dict = {"id": res_dict["id"],
+                                   "s3_available": True}
+                if not ds_dict["private"]:
+                    # If the dataset is public, we can add the resource URL.
+                    res_update_dict["s3_url"] = s3_url
+                logic.get_action("resource_patch")(
+                    context={"ignore_auth": True},
+                    data_dict=res_update_dict)
+                click_echo(f"Uploaded resource {resource.name}", nl)
+                nl = True
+            if delete_after_migration:
+                raise NotImplementedError("Deletion not implemented yet!")
+
     if not nl:
         click.echo("")
     click.echo("Done!")
