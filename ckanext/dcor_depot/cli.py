@@ -6,11 +6,14 @@ import ckan.logic as logic
 import ckan.model as model
 import click
 
+from dcor_shared import get_ckan_config_option, get_resource_path
+
 from . import app_res
 from .depotize import depotize
 from .figshare import figshare
 from .internal import internal, internal_upgrade
 from . import jobs
+from . import s3
 
 
 def click_echo(message, am_on_a_new_line):
@@ -38,6 +41,61 @@ def append_resource(path, dataset_id, delete_source=False):
     app_res.append_resource(path=path,
                             dataset_id=dataset_id,
                             copy=not delete_source)
+
+
+@click.command()
+@click.option("--modified-days", default=-1,
+              help="Only migrate datasets modified within this number of days "
+                   + "in the past. Set to -1 to apply to all datasets.")
+@click.option("--delete-after-migration", is_flag=True,
+              help="Delete files from local after successful transfer "
+                   "to object storage.")
+def dcor_migrate_resources_to_object_store(modified_days=-1,
+                                           delete_after_migration=False):
+    """Migrate resources on block storage to an S3-compatible object store
+
+    This also happens for draft datasets.
+    """
+    # go through all datasets
+    datasets = model.Session.query(model.Package)
+
+    if modified_days >= 0:
+        # Search only the last `days` days.
+        past = datetime.date.today() - datetime.timedelta(days=modified_days)
+        past_str = time.strftime("%Y-%m-%d", past.timetuple())
+        datasets = datasets.filter(model.Package.metadata_modified >= past_str)
+
+    nl = False  # new line character
+    for dataset in datasets:
+        nl = False
+        click.echo(f"Migrating dataset {dataset.id}\r", nl=False)
+        ds_dict = dataset.as_dict()
+        ds_dict["organization"] = logic.get_action("organization_show")(
+                {'ignore_auth': True}, {"id": dataset.owner_org})
+        for resource in dataset.resources:
+            res_dict = resource.as_dict()
+            if res_dict.get("s3_available"):
+                # The resource has already been uploaded to S3, and the
+                # SHA256 sum has also been verified.
+                continue
+            # Get bucket and object names
+            store = get_ckan_config_option(
+                "dcor_object_store.storage_pattern").format(
+                organization_id=ds_dict["id"],
+                resource_id=res_dict["id"]
+            )
+            bucket_name, object_name = store.split(":")
+            # Upload the resource to S3
+            s3.upload_file(bucket_name=bucket_name,
+                           object_name=object_name,
+                           path=str(get_resource_path(res_dict["id"])),
+                           sha256=res_dict.get("sha256"),
+                           private=ds_dict["private"])
+            click_echo(f"Uploaded resource {resource.name}", nl)
+            nl = True
+    if not nl:
+        click.echo("")
+    click.echo("Done!")
 
 
 @click.command()
@@ -122,10 +180,10 @@ def list_all_resources():
             click.echo(resource.id)
 
 
+@click.command()
 @click.option('--modified-days', default=-1,
               help='Only run for datasets modified within this number of days '
                    + 'in the past. Set to -1 to apply to all datasets.')
-@click.command()
 def run_jobs_dcor_depot(modified_days=-1):
     """Compute condensed resource all .rtdc files
 

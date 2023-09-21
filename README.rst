@@ -84,9 +84,31 @@ This plugin implements:
 
      ckan append-resource /path/to/file dataset_id --delete-source
 
+Please make sure that the necessary file permissions are given in ``/data``.
 
+In 2023, it was decided that the huge block storage of DCOR
+should be replaced with an S3-compatible object store, because block storage
+does not scale well. This partially deprecates some of the commands above
+which might be removed or modified to support object storage directly.
 
-Please make sure that the necessary file permissions are given in ``/data``. 
+- CLI for migrating data from block storage to an S3-compatible object storage
+  service. For this, the following configuration keys must be specified in
+  the ``ckan.ini`` file::
+
+    dcor_object_store.access_key_id = ACCESS_KEY_ID
+    dcor_object_store.secret_access_key = SECRET_ACCESS_KEY
+    dcor_object_store.endpoint_url = S3_ENDPOINT_URL
+    dcor_object_store.version = s3v4
+    dcor_object_store.ssl_verify = true
+    # The storage pattern is Python format string defined as
+    # "bucket_name:resource_path" and supports the keys
+    # - "organization_id" (e.g. a947bff7-c1ac-4a10-b60c-aafe74223aaa)
+    # - "resource_id" (e.g. 975923bd-0a70-4844-8732-12a5cffd2308)
+    dcor_object_store.storage_pattern = circle-{organization_id}:{resource_id[:3]}/{resource_id[3:6]}/{resource_id[6:]}
+
+  Usage::
+
+    ckan dcor-migrate-resources-to-object-store
 
 
 Installation
