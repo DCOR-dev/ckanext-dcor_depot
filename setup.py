@@ -42,9 +42,10 @@ setup(
     namespace_packages=['ckanext'],
     install_requires=[
         # the "ckan" dependency is implied
+        "boto3",
         "click",
         "dclab>=0.52.0",
-        "dcor_shared>=0.4.2",
+        "dcor_shared>=0.4.3",
         "h5py",
         "html2text==2019.8.11",
         "numpy",
