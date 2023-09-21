@@ -75,23 +75,21 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                 data_dict={"id": dataset.owner_org})
         for resource in dataset.resources:
             res_dict = resource.as_dict()
+            rid = res_dict["id"]
             if not res_dict.get("s3_available"):
                 # Get bucket and object names
-                store = get_ckan_config_option(
-                    "dcor_object_store.storage_pattern").format(
-                    organization_id=ds_dict["id"],
-                    resource_id=res_dict["id"]
-                )
-                bucket_name, object_name = store.split(":")
+                bucket_name = get_ckan_config_option(
+                    "dcor_object_store.bucket_name").format(
+                    organization_id=ds_dict["id"])
                 # Upload the resource to S3
                 s3_url = s3.upload_file(
                     bucket_name=bucket_name,
-                    object_name=object_name,
-                    path=str(get_resource_path(res_dict["id"])),
+                    object_name=f"{rid[:3]}/{rid[3:6]}/{rid[6:]}",
+                    path=str(get_resource_path(rid)),
                     sha256=res_dict.get("sha256"),
                     private=ds_dict["private"])
                 # Update the resource dictionary
-                res_update_dict = {"id": res_dict["id"],
+                res_update_dict = {"id": rid,
                                    "s3_available": True}
                 if not ds_dict["private"]:
                     # If the dataset is public, we can add the resource URL.
