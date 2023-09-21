@@ -16,7 +16,6 @@ def get_s3_client():
         service_name='s3',
         use_ssl=ssl_verify,
         verify=ssl_verify,
-        api_version=get_ckan_config_option("dcor_object_store.version"),
         endpoint_url=get_ckan_config_option("dcor_object_store.endpoint_url"),
         aws_access_key_id=get_ckan_config_option(
             "dcor_object_store.access_key_id"),
