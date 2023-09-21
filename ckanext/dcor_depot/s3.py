@@ -60,5 +60,6 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
                               "ACL": "private" if private else "public-read",
                               # verification of the upload
                               "ChecksumAlgorithm": "SHA256",
-                              "ChecksumSHA256": sha256}
-                          )
+                              # This is not supported in MinIO:
+                              # "ChecksumSHA256": sha256
+                          })
