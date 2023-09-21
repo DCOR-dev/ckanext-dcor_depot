@@ -41,7 +41,7 @@ def require_bucket(bucket_name):
     bucket_name: str
         Bucket to create
     """
-    _, _, s3_resource = get_s3_client()
+    _, _, s3_resource = get_s3()
     # Create the bucket (this will return the bucket if it already exists)
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/
     # services/s3/client/create_bucket.html
