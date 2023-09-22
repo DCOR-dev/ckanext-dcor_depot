@@ -86,3 +86,6 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
     s3_sha256 = hasher.hexdigest()
     if sha256 != s3_sha256:
         raise ValueError("Checksums don't match!")
+
+    endpoint_url = get_ckan_config_option("dcor_object_store.endpoint_url")
+    return f"{endpoint_url}/{bucket_name}/{object_name}"
