@@ -71,7 +71,7 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
         click.echo(f"Migrating dataset {dataset.id}\r", nl=False)
         ds_dict = dataset.as_dict()
         ds_dict["organization"] = logic.get_action("organization_show")(
-                context={"ignore_auth": True},
+                context={"user": ds_dict["creator_user_id"]},
                 data_dict={"id": dataset.owner_org})
         for resource in dataset.resources:
             res_dict = resource.as_dict()
@@ -90,7 +90,7 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                     private=ds_dict["private"])
                 # Update the resource dictionary
                 logic.get_action("resource_patch")(
-                    context={"ignore_auth": True},
+                    context={"user": ds_dict["creator_user_id"]},
                     data_dict={"id": rid,
                                "s3_available": True,
                                "s3_url": s3_url})
