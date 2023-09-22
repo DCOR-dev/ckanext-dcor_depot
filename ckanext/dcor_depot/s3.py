@@ -52,19 +52,19 @@ def require_bucket(bucket_name):
         {
             "Version": "2012-10-17",
             "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Action": ["s3:GetObject"],
-                    "Resource": ["arn:aws:s3:::*"],
-                    "Condition": {
-                        "StringEquals": {
-                            "s3:ExistingObjectTag/public": [
-                                "true"
-                            ]
-                        }
-                    }
+             {
+              "Sid": "Allow anonymous access to objects with public:true tag",
+              "Effect": "Allow",
+              "Action": ["s3:GetObject"],
+              "Resource": ["arn:aws:s3:::*"],
+              "Principal": "*",
+              "Condition": {
+                "StringEquals": {
+                "s3:ExistingObjectTag/public": ["true"]
                 }
-            ]
+              }
+            }
+          ]
         }
     """
     # Define bucket policy
@@ -72,10 +72,15 @@ def require_bucket(bucket_name):
         "Version": "2012-10-17",
         "Statement": [{
             "Sid": "Allow anonymous access to objects with public:true tag",
+            # allow access given the following conditions
             "Effect": "Allow",
+            # affects all objects in this bucket
             "Resource": f"arn:aws:s3:::{bucket_name}/*",
+            # download the object
             "Action": ["s3:GetObject"],
+            # anonymous access
             "Principal": "*",
+            # only for objects with the public:true tag
             "Condition": {
                 "StringEquals": {"s3:ExistingObjectTag/public": ["true"]}
             }}],
