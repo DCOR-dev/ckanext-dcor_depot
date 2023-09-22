@@ -155,7 +155,7 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
 
     if not private:
         # If the resource is not private, add a tag, so it is picked up
-        # by the bucket policy.
+        # by the bucket policy for public accessibility.
         s3_client.put_object_tagging(
             Bucket=bucket_name,
             Key=object_name,
