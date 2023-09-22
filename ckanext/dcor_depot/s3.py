@@ -71,6 +71,7 @@ def require_bucket(bucket_name):
     bucket_policy = {
         "Version": "2012-10-17",
         "Statement": [{
+            "Sid": "Allow anonymous access to objects with public:true tag",
             "Effect": "Allow",
             "Resource": f"arn:aws:s3:::{bucket_name}/*",
             "Action": ["s3:GetObject"],
