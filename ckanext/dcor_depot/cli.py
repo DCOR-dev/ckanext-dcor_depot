@@ -89,14 +89,11 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                     sha256=res_dict.get("sha256"),
                     private=ds_dict["private"])
                 # Update the resource dictionary
-                res_update_dict = {"id": rid,
-                                   "s3_available": True}
-                if not ds_dict["private"]:
-                    # If the dataset is public, we can add the resource URL.
-                    res_update_dict["s3_url"] = s3_url
                 logic.get_action("resource_patch")(
                     context={"ignore_auth": True},
-                    data_dict=res_update_dict)
+                    data_dict={"id": rid,
+                               "s3_available": True,
+                               "s3_url": s3_url})
                 click_echo(f"Uploaded resource {resource.name}", nl)
                 nl = True
             if delete_after_migration:
