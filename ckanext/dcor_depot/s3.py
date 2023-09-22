@@ -4,7 +4,7 @@ import pathlib
 
 import boto3
 
-from dcor_shared import get_ckan_config_option, sha256sum
+from dcor_shared import get_ckan_config_option
 
 
 @functools.lru_cache()
