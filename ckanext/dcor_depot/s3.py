@@ -1,5 +1,6 @@
 import functools
 import hashlib
+import json
 import pathlib
 
 import boto3
@@ -42,25 +43,83 @@ def require_bucket(bucket_name):
     ----------
     bucket_name: str
         Bucket to create
+
+    Notes
+    -----
+    Buckets are created with the following Access Policy (only objects
+    with the tag "public" set to "true" are publicly accessible)::
+
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": ["s3:GetObject"],
+                    "Resource": ["arn:aws:s3:::*"],
+                    "Condition": {
+                        "StringEquals": {
+                            "s3:ExistingObjectTag/public": [
+                                "true"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
     """
-    _, _, s3_resource = get_s3()
+    # Define bucket policy
+    bucket_policy = {
+        "Version": "2012-10-17",
+        "Statement": [{
+            "Effect": "Allow",
+            "Resource": f"arn:aws:s3:::{bucket_name}/*",
+            "Action": ["s3:GetObject"],
+            "Condition": {
+                "StringEquals": {"s3:ExistingObjectTag/public": ["true"]}
+            }}],
+    }
+    # Convert the policy from dict to JSON string
+    bucket_policy = json.dumps(bucket_policy)
+
+    s3_client, _, s3_resource = get_s3()
     # Create the bucket (this will return the bucket if it already exists)
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/
     # services/s3/client/create_bucket.html
     s3_bucket = s3_resource.Bucket(bucket_name)
     if s3_bucket.creation_date is None:
         s3_bucket.create()
+        s3_client.put_bucket_policy(Bucket=bucket_name, Policy=bucket_policy)
     return s3_bucket
 
 
 def upload_file(bucket_name, object_name, path, sha256, private=True):
+    """Upload a file to a bucket
+
+    Parameters
+    ----------
+    bucket_name: str
+        Name of the bucket
+    object_name: str
+        Path/name to the object in the bucket
+    path: str
+        Local path of the file to be uploaded
+    sha256: str
+        SHA256 checksum of the file to be uploaded
+    private: bool
+        Whether the object should remain private. If set to False,
+        a tag "public:true" is added to the object which is picket up
+        by the bucket policy defined in :func:`require_bucket`.
+
+    Returns
+    -------
+    s3_url: str
+        URL to the S3 object
+    """
     s3_client, _, _ = get_s3()
     s3_bucket = require_bucket(bucket_name)
     s3_bucket.upload_file(Filename=str(path),
                           Key=object_name,
                           ExtraArgs={
-                              # private or public resource?
-                              "ACL": "private" if private else "public-read",
                               # verification of the upload
                               "ChecksumAlgorithm": "SHA256",
                               # This is not supported in MinIO:
@@ -86,6 +145,22 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
     s3_sha256 = hasher.hexdigest()
     if sha256 != s3_sha256:
         raise ValueError("Checksums don't match!")
+
+    if not private:
+        # If the resource is not private, add a tag, so it is picked up
+        # by the bucket policy.
+        s3_client.put_object_tagging(
+            Bucket=bucket_name,
+            Key=object_name,
+            Tagging={
+                'TagSet': [
+                    {
+                        'Key': 'public',
+                        'Value': 'true',
+                    },
+                ],
+            },
+        )
 
     endpoint_url = get_ckan_config_option("dcor_object_store.endpoint_url")
     return f"{endpoint_url}/{bucket_name}/{object_name}"
