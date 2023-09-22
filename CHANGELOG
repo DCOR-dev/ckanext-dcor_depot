@@ -1,6 +1,8 @@
 0.13.0
  - feat: introduce dcor-migrate-resources-to-object-store for new
    S3-based resource storage
+ - enh: when a dataset is made public and it already contains resources
+   in the circle's S3 bucket, then make that object public as well
 0.12.1
  - fix: make bg jobs work with dcor_schemas 0.18.2
  - ref: cleanup jobs

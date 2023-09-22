@@ -5,15 +5,41 @@ from rq.job import Job
 
 from .cli import get_commands
 from .jobs import symlink_user_dataset
+from . import s3
 
 
 class DCORDepotPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IClick)
+    plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IResourceController, inherit=True)
 
     # IClick
     def get_commands(self):
         return get_commands()
+
+    # IPackageController
+    def after_dataset_update(self, context, data_dict):
+        private = data_dict.get("private")
+        if private is not None and not private:
+            # We now have a public dataset. And it could be that this
+            # dataset has been private before. If we already have resources
+            # in this dataset, then we have to set the S3 object tag
+            # "public:true", so everyone can access it.
+            orig_dict = toolkit.get_action("package_show")(
+                context=context, data_dict={"id": data_dict["id"]})
+            # Check whether the package was private before, otherwise
+            # we would have nothing to do.
+            if orig_dict["private"]:
+                bucket_name = "circle-" + orig_dict["organization"]["id"]
+                for res in orig_dict["resources"]:
+                    if res["s3_available"]:
+                        rid = res["id"]
+                        object_names = [
+                            f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
+                        ]
+                        for object_name in object_names:
+                            s3.make_object_public(bucket_name=bucket_name,
+                                                  object_name=object_name)
 
     # IResourceController
     def after_resource_create(self, context, resource):
