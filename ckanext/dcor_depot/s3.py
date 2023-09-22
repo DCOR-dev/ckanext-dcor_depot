@@ -74,6 +74,7 @@ def require_bucket(bucket_name):
             "Effect": "Allow",
             "Resource": f"arn:aws:s3:::{bucket_name}/*",
             "Action": ["s3:GetObject"],
+            "Principal": "*",
             "Condition": {
                 "StringEquals": {"s3:ExistingObjectTag/public": ["true"]}
             }}],
