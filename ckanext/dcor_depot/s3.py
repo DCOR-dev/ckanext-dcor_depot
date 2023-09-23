@@ -124,7 +124,7 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
         Name of the bucket
     object_name: str
         Path/name to the object in the bucket
-    path: str
+    path: str or pathlib.Path
         Local path of the file to be uploaded
     sha256: str
         SHA256 checksum of the file to be uploaded
@@ -151,6 +151,8 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
     # Make sure the upload worked properly by computing the SHA256 sum.
     # Download the file directly into the hasher.
     hasher = hashlib.sha256()
+    # This is an increment of 1MB. If you change this, please also update
+    # the tests for large uploads.
     increment = 2**20
     start_byte = 0
     max_size = pathlib.Path(path).stat().st_size
@@ -163,7 +165,7 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
         if not content:
             break
         hasher.update(content)
-        start_byte = stop_byte
+        start_byte = stop_byte + 1  # range is inclusive
         stop_byte = min(max_size, stop_byte + increment)
     s3_sha256 = hasher.hexdigest()
     if sha256 != s3_sha256:
