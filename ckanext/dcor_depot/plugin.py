@@ -33,7 +33,7 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
             # Make sure the S3 resources get the "public:true" tag.
             bucket_name = "circle-" + orig_dict["organization"]["id"]
             for res in orig_dict["resources"]:
-                if res["s3_available"]:
+                if res.get("s3_available", False):
                     rid = res["id"]
                     object_names = [
                         f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
