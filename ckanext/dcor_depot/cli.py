@@ -90,8 +90,10 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                     private=ds_dict["private"])
                 # Update the resource dictionary
                 logic.get_action("resource_patch")(
-                    context={"user": ds_dict["creator_user_id"],
-                             "ignore_auth": True},
+                    context={
+                        # https://github.com/ckan/ckan/issues/7787
+                        "user": ds_dict["creator_user_id"],
+                        "ignore_auth": True},
                     data_dict={"id": rid,
                                "s3_available": True,
                                "s3_url": s3_url})
