@@ -65,7 +65,7 @@ def test_symlink_user_dataset(enqueue_job_mock, create_with_upload,
     create_context = {'ignore_auth': False,
                       'user': user['name'],
                       'api_version': 3}
-    dataset = make_dataset(create_context, owner_org, with_resource=False,
+    dataset = make_dataset(create_context, owner_org,
                            activate=False)
 
     content = (data_dir / "calibration_beads_47.rtdc").read_bytes()
