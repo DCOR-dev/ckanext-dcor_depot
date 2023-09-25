@@ -1,4 +1,3 @@
-from io import BytesIO
 import mock
 import pathlib
 
@@ -7,7 +6,6 @@ import pytest
 from ckan.cli.cli import ckan as ckan_cli
 import ckan.tests.factories as factories
 from ckan.tests import helpers
-from ckan.tests.pytest_ckan.fixtures import FakeFileStorage
 import ckan.model
 import ckan.common
 import ckanext.dcor_schemas.plugin
@@ -15,48 +13,11 @@ import ckanext.dcor_schemas.plugin
 import dcor_shared
 import requests
 
-from .helper_methods import make_dataset
+from .helper_methods import (
+    create_with_upload_no_temp, make_dataset, synchronous_enqueue_job)
 
 
 data_dir = pathlib.Path(__file__).parent / "data"
-
-
-def synchronous_enqueue_job(job_func, args=None, kwargs=None, title=None,
-                            queue=None, rq_kwargs=None):
-    """
-    Synchronous mock for ``ckan.plugins.toolkit.enqueue_job``.
-    """
-    if rq_kwargs is None:
-        rq_kwargs = {}
-    args = args or []
-    kwargs = kwargs or {}
-    job_func(*args, **kwargs)
-
-
-@pytest.fixture
-def create_with_upload_no_temp(clean_db, ckan_config, monkeypatch):
-    """
-    Create upload without tempdir
-    """
-
-    def factory(data, filename, context=None, **kwargs):
-        if context is None:
-            context = {}
-        action = kwargs.pop("action", "resource_create")
-        field = kwargs.pop("upload_field_name", "upload")
-        test_file = BytesIO()
-        if type(data) is not bytes:
-            data = bytes(data, encoding="utf-8")
-        test_file.write(data)
-        test_file.seek(0)
-        test_resource = FakeFileStorage(test_file, filename)
-
-        params = {
-            field: test_resource,
-        }
-        params.update(kwargs)
-        return helpers.call_action(action, context, **params)
-    return factory
 
 
 # dcor_depot must come first, because jobs are run in sequence and the
@@ -88,7 +49,6 @@ def test_cli_migrate_to_object_store(enqueue_job_mock,
         'capacity': 'admin'
     }])
     # Note: `call_action` bypasses authorization!
-    # create 1st dataset
     create_context = {'ignore_auth': False,
                       'auth_user_obj': user_obj,
                       'user': user['name'],
