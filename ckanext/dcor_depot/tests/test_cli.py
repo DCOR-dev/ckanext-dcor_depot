@@ -13,8 +13,8 @@ import ckanext.dcor_schemas.plugin
 import dcor_shared
 import requests
 
-# This also makes `create_with_upload_no_temp` available.
 from .helper_methods import make_dataset, synchronous_enqueue_job
+from .helper_methods import create_with_upload_no_temp  # noqa: F401
 
 
 data_dir = pathlib.Path(__file__).parent / "data"
@@ -30,7 +30,7 @@ data_dir = pathlib.Path(__file__).parent / "data"
 @mock.patch('ckan.plugins.toolkit.enqueue_job',
             side_effect=synchronous_enqueue_job)
 def test_cli_migrate_to_object_store(enqueue_job_mock,
-                                     create_with_upload_no_temp,
+                                     create_with_upload_no_temp,  # noqa: F811
                                      monkeypatch,
                                      cli,
                                      tmp_path):
