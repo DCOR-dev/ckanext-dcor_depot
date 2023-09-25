@@ -151,13 +151,13 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
     s3_bucket = require_bucket(bucket_name)
     s3_bucket.upload_file(Filename=str(path),
                           Key=object_name,
-                          ExtraArgs={
-                              "Metadata": {"ContentLength": path_size},
-                              # verification of the upload
-                              "ChecksumAlgorithm": "SHA256",
-                              # This is not supported in MinIO:
-                              # "ChecksumSHA256": sha256
-                          })
+                          # ExtraArgs={
+                          # # verification of the upload (breaks OpenStack)
+                          # "ChecksumAlgorithm": "SHA256",
+                          # # This is not supported in MinIO:
+                          # "ChecksumSHA256": sha256
+                          # }
+                          )
     # Make sure the upload worked properly by computing the SHA256 sum.
     # Download the file directly into the hasher.
     hasher = hashlib.sha256()
