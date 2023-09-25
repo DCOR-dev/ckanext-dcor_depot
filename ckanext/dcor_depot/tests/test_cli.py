@@ -13,8 +13,8 @@ import ckanext.dcor_schemas.plugin
 import dcor_shared
 import requests
 
-from .helper_methods import (
-    create_with_upload_no_temp, make_dataset, synchronous_enqueue_job)
+# This also makes `create_with_upload_no_temp` available.
+from .helper_methods import make_dataset, synchronous_enqueue_job
 
 
 data_dir = pathlib.Path(__file__).parent / "data"
