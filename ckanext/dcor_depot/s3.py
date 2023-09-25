@@ -146,11 +146,13 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
     s3_url: str
         URL to the S3 object
     """
+    path_size = pathlib.Path(path).stat().st_size
     s3_client, _, _ = get_s3()
     s3_bucket = require_bucket(bucket_name)
     s3_bucket.upload_file(Filename=str(path),
                           Key=object_name,
                           ExtraArgs={
+                              "ContentLength": path_size,
                               # verification of the upload
                               "ChecksumAlgorithm": "SHA256",
                               # This is not supported in MinIO:
@@ -163,7 +165,7 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
     # the tests for large uploads.
     increment = 2**20
     start_byte = 0
-    max_size = pathlib.Path(path).stat().st_size
+    max_size = path_size
     stop_byte = min(increment, max_size)
     while start_byte < max_size:
         resp = s3_client.get_object(Bucket=bucket_name,
