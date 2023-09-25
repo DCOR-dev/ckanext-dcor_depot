@@ -152,7 +152,7 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
     s3_bucket.upload_file(Filename=str(path),
                           Key=object_name,
                           ExtraArgs={
-                              "ContentLength": path_size,
+                              "Metadata": {"ContentLength": path_size},
                               # verification of the upload
                               "ChecksumAlgorithm": "SHA256",
                               # This is not supported in MinIO:
