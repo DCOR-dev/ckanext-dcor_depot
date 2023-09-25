@@ -4,6 +4,7 @@ import json
 import pathlib
 
 import boto3
+import botocore.exceptions
 
 from dcor_shared import get_ckan_config_option
 
@@ -109,7 +110,14 @@ def require_bucket(bucket_name):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/
     # services/s3/client/create_bucket.html
     s3_bucket = s3_resource.Bucket(bucket_name)
-    if s3_bucket.creation_date is None:
+    creation_date = None
+    try:
+        creation_date = s3_bucket.creation_date
+    except botocore.exceptions.ClientError:
+        # Happens with swift on OpenStack when the bucket does not exist.
+        # Does not happen with minIO (creation_date just returns None there).
+        pass
+    if creation_date is None:
         s3_bucket.create()
         s3_client.put_bucket_policy(Bucket=bucket_name, Policy=bucket_policy)
     return s3_bucket
