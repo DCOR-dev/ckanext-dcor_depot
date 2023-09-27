@@ -70,8 +70,9 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
                     color = "green"
                 else:
                     color = "blue"
+                    tags.append("PRIVATE")
                 message = " ".join(tags)
-            except BaseException:
+            except s3_client.exceptions.NoSuchKey:
                 color = "red"
                 message = "not found"
             click.secho(f"{bucket_name}:{pp} ({message})", fg=color)
