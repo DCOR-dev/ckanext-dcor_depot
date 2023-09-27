@@ -1,6 +1,7 @@
 0.13.0
  - feat: introduce dcor-migrate-resources-to-object-store for new
    S3-based resource storage
+ - feat: add dcor-list-s3-objects-for-dataset for debugging
  - enh: when a dataset is made public and it already contains resources
    in the circle's S3 bucket, then make that object public as well
 0.12.1

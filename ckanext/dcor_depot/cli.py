@@ -43,6 +43,39 @@ def append_resource(path, dataset_id, delete_source=False):
                             copy=not delete_source)
 
 
+@click.argument('dataset_id')
+def dcor_list_s3_objects_for_dataset(dataset_id):
+    package_show = logic.get_action("package_show")
+    dataset_dict = package_show(context={'ignore_auth': True,
+                                         'user': 'default'},
+                                data_dict={"id": dataset_id})
+    # For each resource, list the objects that are currently in S3 along
+    # with the S3 object tags.
+    circle_id = dataset_dict["organization"]["id"]
+    bucket_name = f"circle-{circle_id}"
+    for res_dict in dataset_dict["resources"]:
+        rid = res_dict["id"]
+        paths = [f"resources/{rid[:3]}/{rid[3:6]}/{rid[6:]}"]
+        s3_client, _, _ = s3.get_s3()
+        for pp in paths:
+            try:
+                response = s3_client.get_object_tagging(
+                    Bucket=bucket_name,
+                    Key=pp)
+                tags = []
+                for item in response["TagSet"]:
+                    tags.append(f"{item['Key']}={item['Value']}")
+                if tags.count("public=true"):
+                    color = "green"
+                else:
+                    color = "blue"
+                message = " ".join(tags)
+            except BaseException:
+                color = "red"
+                message = "not found"
+            click.secho(f"{bucket_name}:{pp} ({message})", fg=color)
+
+
 @click.command()
 @click.option("--modified-days", default=-1,
               help="Only migrate datasets modified within this number of days "
@@ -258,6 +291,7 @@ def upgrade_internal(start_date="2000-01-01", end_date="3000-01-01"):
 
 def get_commands():
     return [append_resource,
+            dcor_list_s3_objects_for_dataset,
             dcor_migrate_resources_to_object_store,
             depotize_archive,
             import_figshare,
