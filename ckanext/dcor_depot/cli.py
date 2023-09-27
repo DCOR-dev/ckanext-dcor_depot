@@ -43,6 +43,7 @@ def append_resource(path, dataset_id, delete_source=False):
                             copy=not delete_source)
 
 
+@click.command()
 @click.argument('dataset_id')
 def dcor_list_s3_objects_for_dataset(dataset_id):
     package_show = logic.get_action("package_show")
