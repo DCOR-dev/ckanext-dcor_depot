@@ -46,6 +46,12 @@ def append_resource(path, dataset_id, delete_source=False):
 @click.command()
 @click.argument('dataset_id')
 def dcor_list_s3_objects_for_dataset(dataset_id):
+    """List S3 resource and other data locations for a dataset
+
+    The resources are printed as "bucket:path (message)" and the
+    colors indicate whether the object is publicly available (green),
+    private (blue), or not there (red).
+    """
     package_show = logic.get_action("package_show")
     dataset_dict = package_show(context={'ignore_auth': True,
                                          'user': 'default'},
@@ -67,6 +73,9 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
                 for item in response["TagSet"]:
                     tags.append(f"{item['Key']}={item['Value']}")
                 if tags.count("public=true"):
+                    # As mentioned in the s3 submodule, we define public
+                    # access by the presence of the "public=true" tag for
+                    # an object.
                     color = "green"
                 else:
                     color = "blue"
