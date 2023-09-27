@@ -56,7 +56,7 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
     bucket_name = f"circle-{circle_id}"
     for res_dict in dataset_dict["resources"]:
         rid = res_dict["id"]
-        paths = [f"resources/{rid[:3]}/{rid[3:6]}/{rid[6:]}"]
+        paths = [f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"]
         s3_client, _, _ = s3.get_s3()
         for pp in paths:
             try:
