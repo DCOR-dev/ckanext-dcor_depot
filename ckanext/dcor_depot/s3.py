@@ -9,6 +9,33 @@ import botocore.exceptions
 from dcor_shared import get_ckan_config_option
 
 
+def create_presigned_url(bucket_name, object_name, expiration=3600):
+    """Generate a presigned URL to share an S3 object
+
+    Parameters
+    ----------
+    bucket_name: str
+        Name of the bucket
+    object_name: str
+        Name of the object
+    expiration: int
+        Time in seconds for the presigned URL to remain valid
+
+    Returns
+    -------
+    psurl: str
+        Presigned URL as string.
+    """
+    # Generate a presigned URL for the S3 object
+    s3_client, _, _ = get_s3()
+    psurl = s3_client.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': bucket_name, 'Key': object_name},
+        ExpiresIn=expiration)
+    # The response contains the presigned URL
+    return psurl
+
+
 @functools.lru_cache()
 def get_s3():
     """Return the current S3 client as defined by ckan.ini"""

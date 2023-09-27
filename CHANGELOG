@@ -1,3 +1,5 @@
+0.13.1
+ - enh: support generating S3 presigned URLs
 0.13.0
  - feat: introduce dcor-migrate-resources-to-object-store for new
    S3-based resource storage

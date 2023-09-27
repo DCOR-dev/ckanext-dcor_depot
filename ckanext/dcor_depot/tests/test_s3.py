@@ -50,6 +50,32 @@ def test_make_object_public(tmp_path):
     assert sha256sum(dl_path) == sha256sum(path)
 
 
+def test_presigned_url(tmp_path):
+    path = data_path / "calibration_beads_47.rtdc"
+    bucket_name = f"test-circle-{uuid.uuid4()}"
+    rid = str(uuid.uuid4())
+    object_name = f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"
+    s3_url = s3.upload_file(
+        bucket_name=bucket_name,
+        object_name=object_name,
+        path=path,
+        sha256=sha256sum(path),
+        private=True)
+    # Make sure object is not available publicly
+    response = requests.get(s3_url)
+    assert not response.ok, "resource is private"
+    # Create a presigned URL
+    ps_url = s3.create_presigned_url(bucket_name=bucket_name,
+                                     object_name=object_name)
+    response2 = requests.get(ps_url)
+    assert response2.ok, "the resource is shared, download should work"
+    assert response2.status_code == 200, "download public resource"
+    dl_path = tmp_path / "calbeads.rtdc"
+    with dl_path.open("wb") as fd:
+        fd.write(response2.content)
+    assert sha256sum(dl_path) == sha256sum(path)
+
+
 def test_upload_large_file(tmp_path):
     # Create a ~100MB file
     path = tmp_path / "large_file.rtdc"
