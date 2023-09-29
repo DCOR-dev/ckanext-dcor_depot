@@ -2,6 +2,7 @@ import functools
 import hashlib
 import json
 import pathlib
+import warnings
 
 import boto3
 import botocore.exceptions
@@ -145,7 +146,11 @@ def require_bucket(bucket_name):
         # Does not happen with minIO (creation_date just returns None there).
         pass
     if creation_date is None:
-        s3_bucket.create()
+        try:
+            s3_bucket.create()
+        except s3_client.exceptions.NoSuchBucket:
+            warnings.warn(f"The bucket {bucket_name} already exists. I will "
+                          f"try to upload the resource anyway.")
         s3_client.put_bucket_policy(Bucket=bucket_name, Policy=bucket_policy)
     return s3_bucket
 
