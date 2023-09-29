@@ -145,7 +145,7 @@ def test_upload_wrong_sha256():
     bucket_name = f"test-circle-{uuid.uuid4()}"
     rid = str(uuid.uuid4())
     object_name = f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"
-    with pytest.raises(ValueError, match="Checksums don't match!"):
+    with pytest.raises(ValueError, match="Checksum mismatch"):
         s3.upload_file(
             bucket_name=bucket_name,
             object_name=object_name,

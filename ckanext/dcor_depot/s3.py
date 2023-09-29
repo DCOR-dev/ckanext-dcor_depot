@@ -206,8 +206,7 @@ def upload_file(bucket_name, object_name, path, sha256, private=True):
         stop_byte = min(max_size, stop_byte + increment)
     s3_sha256 = hasher.hexdigest()
     if sha256 != s3_sha256:
-        raise ValueError(
-            f"Checksums mismatch for {path} and {bucket_name}:{object_name}!")
+        raise ValueError(f"Checksum mismatch for {bucket_name}:{object_name}!")
 
     if not private:
         # If the resource is not private, add a tag, so it is picked up
