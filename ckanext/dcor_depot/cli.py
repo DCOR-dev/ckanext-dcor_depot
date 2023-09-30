@@ -6,7 +6,7 @@ import ckan.logic as logic
 import ckan.model as model
 import click
 
-from dcor_shared import get_ckan_config_option, get_resource_path
+from dcor_shared import get_ckan_config_option, get_resource_path, sha256sum
 
 from . import app_res
 from .depotize import depotize
@@ -120,6 +120,8 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
         for resource in dataset.resources:
             res_dict = resource.as_dict()
             rid = res_dict["id"]
+            path_local = str(get_resource_path(rid))
+            sha256 = res_dict.get("sha256") or sha256sum(path_local)
             if not res_dict.get("s3_available"):
                 # Get bucket and object names
                 bucket_name = get_ckan_config_option(
@@ -129,8 +131,8 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                 s3_url = s3.upload_file(
                     bucket_name=bucket_name,
                     object_name=f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
-                    path=str(get_resource_path(rid)),
-                    sha256=res_dict.get("sha256"),
+                    path=path_local,
+                    sha256=sha256,
                     private=ds_dict["private"])
                 # Update the resource dictionary
                 logic.get_action("resource_patch")(
