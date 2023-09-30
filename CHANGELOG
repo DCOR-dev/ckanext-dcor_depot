@@ -1,5 +1,6 @@
 0.13.2
  - fix: compute SHA256 sum for resources that have none when migrating to S3
+ - fix: use correct bucket name when setting public tags on objects
 0.13.1
  - enh: support generating S3 presigned URLs
  - enh: improved error message on checksum mismatch for uploading to S3

@@ -3,6 +3,8 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from rq.job import Job
 
+from dcor_shared import get_ckan_config_option
+
 from .cli import get_commands
 from .jobs import symlink_user_dataset
 from . import s3
@@ -31,7 +33,9 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
             orig_dict = toolkit.get_action("package_show")(
                 context=context, data_dict={"id": data_dict["id"]})
             # Make sure the S3 resources get the "public:true" tag.
-            bucket_name = "circle-" + orig_dict["organization"]["id"]
+            bucket_name = get_ckan_config_option(
+                "dcor_object_store.bucket_name").format(
+                organization_id=orig_dict["organization"]["id"])
             for res in orig_dict["resources"]:
                 if res.get("s3_available", False):
                     rid = res["id"]

@@ -59,7 +59,8 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
     # For each resource, list the objects that are currently in S3 along
     # with the S3 object tags.
     circle_id = dataset_dict["organization"]["id"]
-    bucket_name = f"circle-{circle_id}"
+    bucket_schema = get_ckan_config_option("dcor_object_store.bucket_name")
+    bucket_name = bucket_schema.format(organization_id=circle_id)
     for res_dict in dataset_dict["resources"]:
         rid = res_dict["id"]
         paths = [f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"]

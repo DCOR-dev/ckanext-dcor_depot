@@ -66,18 +66,25 @@ def get_s3():
 
 def make_object_public(bucket_name, object_name):
     s3_client, _, _ = get_s3()
-    s3_client.put_object_tagging(
+    response = s3_client.get_object_tagging(
         Bucket=bucket_name,
-        Key=object_name,
-        Tagging={
-            'TagSet': [
-                {
-                    'Key': 'public',
-                    'Value': 'true',
-                },
-            ],
-        },
-    )
+        Key=object_name)
+    tags = []
+    for item in response["TagSet"]:
+        tags.append(f"{item['Key']}={item['Value']}")
+    if not tags.count("public=true"):
+        s3_client.put_object_tagging(
+            Bucket=bucket_name,
+            Key=object_name,
+            Tagging={
+                'TagSet': [
+                    {
+                        'Key': 'public',
+                        'Value': 'true',
+                    },
+                ],
+            },
+        )
 
 
 @functools.lru_cache()
