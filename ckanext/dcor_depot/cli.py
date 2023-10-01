@@ -129,22 +129,26 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                     "dcor_object_store.bucket_name").format(
                     organization_id=ds_dict["organization"]["id"])
                 # Upload the resource to S3
-                s3_url = s3.upload_file(
-                    bucket_name=bucket_name,
-                    object_name=f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
-                    path=path_local,
-                    sha256=sha256,
-                    private=ds_dict["private"])
-                # Update the resource dictionary
-                logic.get_action("resource_patch")(
-                    context={
-                        # https://github.com/ckan/ckan/issues/7787
-                        "user": ds_dict["creator_user_id"],
-                        "ignore_auth": True},
-                    data_dict={"id": rid,
-                               "s3_available": True,
-                               "s3_url": s3_url})
-                click_echo(f"Uploaded resource {resource.name}", nl)
+                try:
+                    s3_url = s3.upload_file(
+                        bucket_name=bucket_name,
+                        object_name=f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
+                        path=path_local,
+                        sha256=sha256,
+                        private=ds_dict["private"])
+                except FileNotFoundError:
+                    click_echo(f"Missing file {resource.name}", nl)
+                else:
+                    # Update the resource dictionary
+                    logic.get_action("resource_patch")(
+                        context={
+                            # https://github.com/ckan/ckan/issues/7787
+                            "user": ds_dict["creator_user_id"],
+                            "ignore_auth": True},
+                        data_dict={"id": rid,
+                                   "s3_available": True,
+                                   "s3_url": s3_url})
+                    click_echo(f"Uploaded resource {resource.name}", nl)
                 nl = True
             if delete_after_migration:
                 raise NotImplementedError("Deletion not implemented yet!")
