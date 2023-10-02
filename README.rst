@@ -16,9 +16,11 @@ This plugin implements:
 
 - Data storage management. All resources uploaded by a user are moved
   to ``/data/users-HOSTNAME/USERNAME-ORGNAME/PK/ID/PKGNAME_RESID_RESNAME``
-  and symlinks are created in ``/data/ckan-HOSTNAME/resources/RES/OUR/CEID``.
+  and symlinks are created in ``/data/ckan-HOSTNAME/resources/RES/OUR/CEID``
+  via a background job.
   CKAN itself will not notice this. The idea is to have a filesystem overview
   about the datasets of each user.
+- A backround job uploads all resources to S3 `after_resource_create`.
 - Import datasets from figshare. Existing datasets from figshare are
   downloaded to the ``/data/depots/figshare`` directory and, upon resource
   creation, symlinked there from  ``/data/ckan-HOSTNAME/resources/RES/OUR/CEID``

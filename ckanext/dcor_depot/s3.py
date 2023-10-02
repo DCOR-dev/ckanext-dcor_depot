@@ -64,6 +64,13 @@ def get_s3():
     return s3_client, s3_session, s3_resource
 
 
+def is_available():
+    """Return True if S3 credentials have been specified"""
+    s3_key_id = get_ckan_config_option("dcor_object_store.access_key_id")
+    s3_secret = get_ckan_config_option("dcor_object_store.secret_access_key")
+    return s3_key_id and s3_secret
+
+
 def make_object_public(bucket_name, object_name):
     s3_client, _, _ = get_s3()
     response = s3_client.get_object_tagging(

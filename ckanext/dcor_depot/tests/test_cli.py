@@ -9,6 +9,7 @@ from ckan.tests import helpers
 import ckan.model
 import ckan.common
 import ckanext.dcor_schemas.plugin
+import ckanext.dcor_depot.jobs
 
 import dcor_shared
 import requests
@@ -20,10 +21,9 @@ from .helper_methods import create_with_upload_no_temp  # noqa: F401
 data_dir = pathlib.Path(__file__).parent / "data"
 
 
-# dcor_depot must come first, because jobs are run in sequence and the
-# symlink_user_dataset jobs must be executed first so that dcor_schemas
-# does not complain about resources not available in wait_for_resource.
-@pytest.mark.ckan_config('ckan.plugins', 'dcor_depot dcor_schemas')
+# Deactivate the dcor_depot plugin, so that the automatic upload to S3
+# is not performed.
+@pytest.mark.ckan_config('ckan.plugins', 'dcor_schemas')
 @pytest.mark.usefixtures('clean_db', 'with_request_context')
 # We have to use synchronous_enqueue_job, because the background workers
 # are running as www-data and cannot move files across the file system.
@@ -66,6 +66,10 @@ def test_cli_migrate_to_object_store(enqueue_job_mock,
 
     res_path = dcor_shared.get_resource_path(res_dict["id"])
     dcor_shared.wait_for_resource(res_path)
+
+    # Make sure the resource is not on S3 already
+    res_dict = helpers.call_action("resource_show", id=res_dict["id"])
+    assert "s3_available" not in res_dict
 
     result = cli.invoke(ckan_cli, ["dcor-migrate-resources-to-object-store"])
 

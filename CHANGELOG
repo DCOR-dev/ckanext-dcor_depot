@@ -1,4 +1,5 @@
 0.13.3
+ - enh: automated resource upload to S3 via background job
  - fix: skip resources that are missing on DCOR when migrating to S3
 0.13.2
  - fix: compute SHA256 sum for resources that have none when migrating to S3

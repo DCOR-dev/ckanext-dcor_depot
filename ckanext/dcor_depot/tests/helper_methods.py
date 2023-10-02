@@ -61,12 +61,14 @@ def make_dataset(create_context, owner_org, create_with_upload=None,
                             id=ds["id"],
                             state="active")
 
-    dataset = helpers.call_action("package_show", id=ds["id"])
+    ds_dict = helpers.call_action("package_show", id=ds["id"])
 
     if create_with_upload is not None:
-        return dataset, rs
+        # updated resource dictionary
+        rs_dict = helpers.call_action("resource_show", id=rs["id"])
+        return ds_dict, rs_dict
     else:
-        return dataset
+        return ds_dict
 
 
 def make_resource(create_with_upload, create_context, dataset_id):

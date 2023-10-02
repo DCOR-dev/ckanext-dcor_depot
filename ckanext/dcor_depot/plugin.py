@@ -6,7 +6,7 @@ from rq.job import Job
 from dcor_shared import get_ckan_config_option
 
 from .cli import get_commands
-from .jobs import symlink_user_dataset
+from .jobs import symlink_user_dataset, migrate_resource_to_s3
 from . import s3
 
 
@@ -48,6 +48,7 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
 
     # IResourceController
     def after_resource_create(self, context, resource):
+        # Symlinking new dataset
         # check organization
         pkg_id = resource["package_id"]
         pkg = toolkit.get_action('package_show')(context, {'id': pkg_id})
@@ -64,3 +65,21 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
                                 queue="dcor-short",
                                 rq_kwargs={"timeout": 60,
                                            "job_id": jid_symlink})
+
+        # Migrating data to S3
+        # This job should only be run if the S3 access is available
+        if s3.is_available():
+            jid_migrate_s3 = pkg_job_id + "migrates3"
+            toolkit.enqueue_job(migrate_resource_to_s3,
+                                [resource],
+                                title="Migrate resource to S3 object store",
+                                queue="dcor-normal",
+                                rq_kwargs={"timeout": 3600,
+                                           "job_id": jid_migrate_s3,
+                                           "depends_on": [
+                                               # symlink is general requirement
+                                               jid_symlink,
+                                               # upload requires SHA256 check
+                                               pkg_job_id + "sha256",
+                                           ]}
+                                )
