@@ -3,11 +3,10 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from rq.job import Job
 
-from dcor_shared import get_ckan_config_option
+from dcor_shared import get_ckan_config_option, s3
 
 from .cli import get_commands
 from .jobs import symlink_user_dataset, migrate_resource_to_s3
-from . import s3
 
 
 class DCORDepotPlugin(plugins.SingletonPlugin):
@@ -41,10 +40,12 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
                     rid = res["id"]
                     object_names = [
                         f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
+                        f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
                     ]
                     for object_name in object_names:
                         s3.make_object_public(bucket_name=bucket_name,
-                                              object_name=object_name)
+                                              object_name=object_name,
+                                              missing_ok=True)
 
     # IResourceController
     def after_resource_create(self, context, resource):

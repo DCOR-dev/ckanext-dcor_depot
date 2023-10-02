@@ -10,9 +10,8 @@ import ckan.common
 import ckan.logic
 
 import ckanext.dcor_schemas.plugin
-from ckanext.dcor_depot import s3
 
-from dcor_shared import get_ckan_config_option, get_resource_path
+from dcor_shared import get_ckan_config_option, get_resource_path, s3
 
 from .helper_methods import make_dataset, synchronous_enqueue_job
 from .helper_methods import create_with_upload_no_temp  # noqa: F401

@@ -6,14 +6,14 @@ import ckan.logic as logic
 import ckan.model as model
 import click
 
-from dcor_shared import get_ckan_config_option, get_resource_path, sha256sum
+from dcor_shared import (
+    DC_MIME_TYPES, s3, get_ckan_config_option, get_resource_path, sha256sum)
 
 from . import app_res
 from .depotize import depotize
 from .figshare import figshare
 from .internal import internal, internal_upgrade
 from . import jobs
-from . import s3
 
 
 def click_echo(message, am_on_a_new_line):
@@ -64,6 +64,9 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
     for res_dict in dataset_dict["resources"]:
         rid = res_dict["id"]
         paths = [f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"]
+        if res_dict["mimetype"] in DC_MIME_TYPES:
+            paths.append(f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}")
+            paths.append(f"preview/{rid[:3]}/{rid[3:6]}/{rid[6:]}")
         s3_client, _, _ = s3.get_s3()
         for pp in paths:
             try:

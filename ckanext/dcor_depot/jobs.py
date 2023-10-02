@@ -3,11 +3,11 @@ import warnings
 from ckan import logic
 import ckan.plugins.toolkit as toolkit
 from dcor_shared import (
-    get_ckan_config_option, get_resource_path, sha256sum, wait_for_resource)
+    get_ckan_config_option, get_resource_path, s3, sha256sum,
+    wait_for_resource)
 
 from .orgs import MANUAL_DEPOT_ORGS
 from .paths import USER_DEPOT
-from . import s3
 
 
 class NoSHA256Available(UserWarning):
