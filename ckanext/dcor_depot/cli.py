@@ -1,6 +1,7 @@
 import datetime
 import pathlib
 import time
+import traceback as tb
 
 import ckan.logic as logic
 import ckan.model as model
@@ -142,15 +143,21 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                 except FileNotFoundError:
                     click_echo(f"Missing file {resource.name}", nl)
                 else:
-                    # Update the resource dictionary
-                    logic.get_action("resource_patch")(
-                        context={
-                            # https://github.com/ckan/ckan/issues/7787
-                            "user": ds_dict["creator_user_id"],
-                            "ignore_auth": True},
-                        data_dict={"id": rid,
-                                   "s3_available": True,
-                                   "s3_url": s3_url})
+                    try:
+                        # Update the resource dictionary
+                        logic.get_action("resource_patch")(
+                            context={
+                                # https://github.com/ckan/ckan/issues/7787
+                                "user": ds_dict["creator_user_id"],
+                                "ignore_auth": True},
+                            data_dict={"id": rid,
+                                       "s3_available": True,
+                                       "s3_url": s3_url})
+                    except BaseException:
+                        print("")
+                        click_echo(f"Failed resource {resource.name}", False)
+                        click_echo(tb.format_exc(), False)
+                        print("")
                     click_echo(f"Uploaded resource {resource.name}", nl)
                 nl = True
             if delete_after_migration:

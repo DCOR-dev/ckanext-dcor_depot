@@ -1,3 +1,5 @@
+0.13.4
+ - enh: support invalid datasets when uploading to S3
 0.13.3
  - fix: skip resources that are missing on DCOR when migrating to S3
  - enh: automated resource upload to S3 via background job
