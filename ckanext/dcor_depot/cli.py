@@ -129,17 +129,18 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
             res_dict = resource.as_dict()
             rid = res_dict["id"]
             ploc = str(get_resource_path(rid))
-            sha_res = res_dict.get("sha256") or sha256sum(ploc)
             # Get bucket and object names
             bucket_name = get_ckan_config_option(
                 "dcor_object_store.bucket_name").format(
                 organization_id=ds_dict["organization"]["id"])
+            objects = [(ploc,
+                        f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
+                        res_dict.get("sha256"))]
             pcond = ploc + "_condensed.rtdc"
-            sha_con = sha256sum(pcond)
-            objects = [
-                (ploc, f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}", sha_res),
-                (pcond, f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}", sha_con),
-            ]
+            if pathlib.Path(pcond).exists():
+                objects.append((pcond,
+                                f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
+                                None))
             if not res_dict.get("s3_available") or verify_existence:
                 # Upload the resource and condensed file to S3
                 for object_path, object_name, sha in objects:
@@ -148,7 +149,7 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                             bucket_name=bucket_name,
                             object_name=object_name,
                             path=object_path,
-                            sha256=sha,
+                            sha256=sha or sha256sum(object_path),
                             private=ds_dict["private"],
                             # Set override to False which (verify_existence)
                             override=False,
