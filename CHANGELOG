@@ -1,3 +1,6 @@
+0.13.5
+ - enh: pass --verify-existence to dcor-migrate-resources-to-object_store
+ - setup: bump dcor_shared to 0.5.3
 0.13.4
  - enh: support invalid datasets when uploading to S3
 0.13.3

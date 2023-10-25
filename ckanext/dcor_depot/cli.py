@@ -99,8 +99,11 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
 @click.option("--delete-after-migration", is_flag=True,
               help="Delete files from local after successful transfer "
                    "to object storage.")
+@click.option("--verify-existence", is_flag=True,
+              help="Verify that resources exist in S3")
 def dcor_migrate_resources_to_object_store(modified_days=-1,
-                                           delete_after_migration=False):
+                                           delete_after_migration=False,
+                                           verify_existence=False):
     """Migrate resources on block storage to an S3-compatible object store
 
     This also happens for draft datasets.
@@ -114,7 +117,7 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
         past_str = time.strftime("%Y-%m-%d", past.timetuple())
         datasets = datasets.filter(model.Package.metadata_modified >= past_str)
 
-    nl = False  # new line character
+    nl = False
     for dataset in datasets:
         nl = False
         click.echo(f"Migrating dataset {dataset.id}\r", nl=False)
@@ -127,39 +130,59 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
             rid = res_dict["id"]
             path_local = str(get_resource_path(rid))
             sha256 = res_dict.get("sha256") or sha256sum(path_local)
-            if not res_dict.get("s3_available"):
-                # Get bucket and object names
-                bucket_name = get_ckan_config_option(
-                    "dcor_object_store.bucket_name").format(
-                    organization_id=ds_dict["organization"]["id"])
-                # Upload the resource to S3
-                try:
-                    s3_url = s3.upload_file(
-                        bucket_name=bucket_name,
-                        object_name=f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
-                        path=path_local,
-                        sha256=sha256,
-                        private=ds_dict["private"])
-                except FileNotFoundError:
-                    click_echo(f"Missing file {resource.name}", nl)
-                else:
+            # Get bucket and object names
+            bucket_name = get_ckan_config_option(
+                "dcor_object_store.bucket_name").format(
+                organization_id=ds_dict["organization"]["id"])
+            path_cond = path_local + "_condensed.rtdc"
+            objects = [
+                (path_local, f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"),
+                (path_cond, f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}"),
+            ]
+            if not res_dict.get("s3_available") or verify_existence:
+                # Upload the resource and condensed file to S3
+                for object_path, object_name in objects:
                     try:
-                        # Update the resource dictionary
-                        logic.get_action("resource_patch")(
-                            context={
-                                # https://github.com/ckan/ckan/issues/7787
-                                "user": ds_dict["creator_user_id"],
-                                "ignore_auth": True},
-                            data_dict={"id": rid,
-                                       "s3_available": True,
-                                       "s3_url": s3_url})
-                    except BaseException:
-                        print("")
-                        click_echo(f"Failed resource {resource.name}", False)
-                        click_echo(tb.format_exc(), False)
-                        print("")
-                    click_echo(f"Uploaded resource {resource.name}", nl)
-                nl = True
+                        s3_url = s3.upload_file(
+                            bucket_name=bucket_name,
+                            object_name=object_name,
+                            path=object_path,
+                            sha256=sha256,
+                            private=ds_dict["private"],
+                            # Set override to False which (verify_existence)
+                            override=False,
+                        )
+                    except FileNotFoundError:
+                        click_echo(f"Missing file {object_path}", nl)
+                        nl = True
+                    else:
+                        # Check if the s3 URLs have been set
+                        if ("s3_available" not in res_dict
+                                or "s3_url" not in res_dict):
+                            try:
+                                # Update the resource dictionary
+                                logic.get_action("resource_patch")(
+                                    context={
+                                        # https://github.com/ckan/
+                                        # ckan/issues/7787
+                                        "user": ds_dict["creator_user_id"],
+                                        "ignore_auth": True},
+                                    data_dict={"id": rid,
+                                               "s3_available": True,
+                                               "s3_url": s3_url})
+                            except BaseException:
+                                click_echo(
+                                    f"Failed resource {resource.name}", nl)
+                                nl = True
+                                click_echo(tb.format_exc(), nl)
+                            else:
+                                # Just set these here so in the next iteration
+                                # (for the condensed file), we don't update
+                                # the resource dictionary again.
+                                res_dict["s3_available"] = True
+                                res_dict["s3_url"] = s3_url
+                        click_echo(f"Uploaded {object_name}", nl)
+                        nl = True
             if delete_after_migration:
                 raise NotImplementedError("Deletion not implemented yet!")
 
