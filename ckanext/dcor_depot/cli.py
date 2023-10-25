@@ -128,30 +128,36 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
         for resource in dataset.resources:
             res_dict = resource.as_dict()
             rid = res_dict["id"]
-            path_local = str(get_resource_path(rid))
-            sha256 = res_dict.get("sha256") or sha256sum(path_local)
+            ploc = str(get_resource_path(rid))
+            sha_res = res_dict.get("sha256") or sha256sum(ploc)
             # Get bucket and object names
             bucket_name = get_ckan_config_option(
                 "dcor_object_store.bucket_name").format(
                 organization_id=ds_dict["organization"]["id"])
-            path_cond = path_local + "_condensed.rtdc"
+            pcond = ploc + "_condensed.rtdc"
+            sha_con = sha256sum(pcond)
             objects = [
-                (path_local, f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"),
-                (path_cond, f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}"),
+                (ploc, f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}", sha_res),
+                (pcond, f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}", sha_con),
             ]
             if not res_dict.get("s3_available") or verify_existence:
                 # Upload the resource and condensed file to S3
-                for object_path, object_name in objects:
+                for object_path, object_name, sha in objects:
                     try:
                         s3_url = s3.upload_file(
                             bucket_name=bucket_name,
                             object_name=object_name,
                             path=object_path,
-                            sha256=sha256,
+                            sha256=sha,
                             private=ds_dict["private"],
                             # Set override to False which (verify_existence)
                             override=False,
                         )
+                        if verify_existence:
+                            click_echo(f"Checked {object_name}", nl)
+                        else:
+                            click_echo(f"Uploaded {object_name}", nl)
+                        nl = True
                     except FileNotFoundError:
                         click_echo(f"Missing file {object_path}", nl)
                         nl = True
@@ -181,8 +187,6 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                                 # the resource dictionary again.
                                 res_dict["s3_available"] = True
                                 res_dict["s3_url"] = s3_url
-                        click_echo(f"Uploaded {object_name}", nl)
-                        nl = True
             if delete_after_migration:
                 raise NotImplementedError("Deletion not implemented yet!")
 
