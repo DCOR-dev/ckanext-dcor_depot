@@ -1,3 +1,5 @@
+0.13.6
+ - enh: upload previews to S3 with dcor-migrate-resources-to-object_store
 0.13.5
  - enh: pass --verify-existence to dcor-migrate-resources-to-object_store
  - setup: bump dcor_shared to 0.5.3

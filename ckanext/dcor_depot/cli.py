@@ -136,10 +136,17 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
             objects = [(ploc,
                         f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
                         res_dict.get("sha256"))]
+            # condensed dataset
             pcond = ploc + "_condensed.rtdc"
             if pathlib.Path(pcond).exists():
                 objects.append((pcond,
                                 f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
+                                None))
+            # preview image
+            pprev = ploc + "_preview.jpg"
+            if pathlib.Path(pprev).exists():
+                objects.append((pprev,
+                                f"preview/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
                                 None))
             if not res_dict.get("s3_available") or verify_existence:
                 # Upload the resource and condensed file to S3
@@ -151,7 +158,7 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                             path=object_path,
                             sha256=sha or sha256sum(object_path),
                             private=ds_dict["private"],
-                            # Set override to False which (verify_existence)
+                            # Set override to False (verify_existence)
                             override=False,
                         )
                         if verify_existence:
