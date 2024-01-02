@@ -1,3 +1,6 @@
+0.13.7
+ - enh: add --verify-checksum flag to dcor-migrate-resources-to-object_store
+ - setup: bump dcor_shared to 0.5.5
 0.13.6
  - enh: upload previews to S3 with dcor-migrate-resources-to-object_store
 0.13.5

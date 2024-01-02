@@ -97,17 +97,24 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
               help="Only migrate datasets modified within this number of days "
                    + "in the past. Set to -1 to apply to all datasets.")
 @click.option("--delete-after-migration", is_flag=True,
-              help="Delete files from local after successful transfer "
-                   "to object storage.")
+              help="Delete files from local block storage after successful "
+                   "transfer to object storage.")
 @click.option("--verify-existence", is_flag=True,
               help="Verify that resources exist in S3")
+@click.option("--verify-checksum", is_flag=True,
+              help="Verify the checksum of the file in S3; this option "
+                   "implies --verify-existence")
 def dcor_migrate_resources_to_object_store(modified_days=-1,
                                            delete_after_migration=False,
-                                           verify_existence=False):
+                                           verify_existence=False,
+                                           verify_checksum=False,
+                                           ):
     """Migrate resources on block storage to an S3-compatible object store
 
     This also happens for draft datasets.
     """
+    # verify_checksum implies verify_existence [sic]
+    verify_existence = verify_existence or verify_checksum
     # go through all datasets
     datasets = model.Session.query(model.Package)
 
@@ -151,17 +158,31 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
             if not res_dict.get("s3_available") or verify_existence:
                 # Upload the resource and condensed file to S3
                 for object_path, object_name, sha in objects:
+                    sha = sha or sha256sum(object_path)
+                    override = False  # no override by default
+
+                    if verify_checksum and s3.object_exists(
+                            bucket_name=bucket_name, object_name=object_name):
+                        s3_sha256 = s3.compute_checksum(
+                            bucket_name=bucket_name,
+                            object_name=object_name)
+                        if s3_sha256 != sha:
+                            # Override only if the user requested it and
+                            # only if the SHA256 sum did not match.
+                            override = True
+
                     try:
                         s3_url = s3.upload_file(
                             bucket_name=bucket_name,
                             object_name=object_name,
                             path=object_path,
-                            sha256=sha or sha256sum(object_path),
+                            sha256=sha,
                             private=ds_dict["private"],
-                            # Set override to False (verify_existence)
-                            override=False,
+                            override=override,
                         )
-                        if verify_existence:
+                        if verify_checksum:
+                            click_echo(f"Verified {object_name}", nl)
+                        elif verify_existence:
                             click_echo(f"Checked {object_name}", nl)
                         else:
                             click_echo(f"Uploaded {object_name}", nl)
