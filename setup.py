@@ -44,7 +44,7 @@ setup(
         # the "ckan" dependency is implied
         "boto3",
         "click",
-        "dclab>=0.54.2",
+        "dclab>=0.56.2",
         "dcor_shared>=0.5.5",
         "h5py",
         "html2text==2019.8.11",
