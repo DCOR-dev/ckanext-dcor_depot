@@ -81,11 +81,12 @@ def test_internal_upgrade(monkeypatch, ckan_config, tmpdir):
     assert res_list[2]["name"] == namestem + "_ad1_m002_bg.png"
     assert res_list[3]["name"] == namestem + "_ad2_m002_softwaresettings.ini"
 
+    p1 = get_resource_path(res_list[1]["id"])
     wait_for_resource(res_list[1]["id"])
     with h5py.File(p1, "r") as h5:
         assert h5.attrs["experiment:sample"] == "calibration_beads"
 
-    p2 = get_resource_path()
+    p2 = get_resource_path(res_list[0]["id"])
     wait_for_resource(res_list[0]["id"])
     with h5py.File(p2, "r") as h5:
         assert h5.attrs["experiment:sample"] == "Thor!"
