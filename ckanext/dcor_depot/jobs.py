@@ -31,7 +31,7 @@ def migrate_resource_to_s3(resource):
     """Migrate a resource to the S3 object store"""
     path = get_resource_path(resource["id"])
     # Make sure the resource is available for processing
-    wait_for_resource(path)
+    wait_for_resource(resource["id"])
     ds_dict = toolkit.get_action('package_show')(
         admin_context(),
         {'id': resource["package_id"]})

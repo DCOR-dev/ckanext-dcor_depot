@@ -64,8 +64,7 @@ def test_cli_migrate_to_object_store(enqueue_job_mock,
         context=create_context,
     )
 
-    res_path = dcor_shared.get_resource_path(res_dict["id"])
-    dcor_shared.wait_for_resource(res_path)
+    dcor_shared.wait_for_resource(res_dict["id"])
 
     # Make sure the resource is not on S3 already
     res_dict = helpers.call_action("resource_show", id=res_dict["id"])
@@ -136,8 +135,7 @@ def test_cli_migrate_to_object_store_with_verify_existence(
         context=create_context,
     )
 
-    res_path = dcor_shared.get_resource_path(res_dict["id"])
-    dcor_shared.wait_for_resource(res_path)
+    dcor_shared.wait_for_resource(res_dict["id"])
 
     # Make sure the resource is not on S3 already
     res_dict = helpers.call_action("resource_show", id=res_dict["id"])
@@ -228,8 +226,7 @@ def test_cli_migrate_to_object_store_with_verify_checksum(
         context=create_context,
     )
 
-    res_path = dcor_shared.get_resource_path(res_dict["id"])
-    dcor_shared.wait_for_resource(res_path)
+    dcor_shared.wait_for_resource(res_dict["id"])
 
     # Make sure the resource is not on S3 already
     res_dict = helpers.call_action("resource_show", id=res_dict["id"])
