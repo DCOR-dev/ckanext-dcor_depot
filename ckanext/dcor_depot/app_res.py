@@ -2,8 +2,9 @@ import pathlib
 import shutil
 
 from ckan import logic
+from dcor_shared import sha256sum
 
-from .depot import make_id, sha_256
+from .depot import make_id
 from .internal import import_resource
 from . import paths
 
@@ -19,7 +20,7 @@ def append_resource(path, dataset_id, copy=True):
     dataset_dict = package_show(context=admin_context(),
                                 data_dict={"id": dataset_id})
 
-    path_hash = sha_256(path)
+    path_hash = sha256sum(path)
 
     # Create a resource ID from the dataset ID and the resource hash
     resource_id = make_id([dataset_dict["id"],

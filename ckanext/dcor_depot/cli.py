@@ -156,7 +156,7 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                                 f"preview/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
                                 None))
             if not res_dict.get("s3_available") or verify_existence:
-                # Upload the resource and condensed file to S3
+                # Upload the files to S3
                 for object_path, object_name, sha in objects:
                     sha = sha or sha256sum(object_path)
                     override = False  # no override by default

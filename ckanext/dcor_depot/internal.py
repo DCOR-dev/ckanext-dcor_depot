@@ -15,11 +15,11 @@ from ckan import logic
 
 import dclab
 from dclab import cli
-from dcor_shared import get_resource_path
+from dcor_shared import get_resource_path, sha256sum
 
 from .orgs import INTERNAL_ORG
 from .paths import INTERNAL_DEPOT
-from .depot import DUMMY_BYTES, make_id, sha_256
+from .depot import DUMMY_BYTES, make_id
 
 
 def admin_context():
@@ -32,8 +32,8 @@ def create_internal_org():
     organization_create = logic.get_action("organization_create")
     # check if organization exists
     try:
-        organization_show(context=admin_context(),
-                          data_dict={"id": INTERNAL_ORG})
+        org_dict = organization_show(context=admin_context(),
+                                     data_dict={"id": INTERNAL_ORG})
     except logic.NotFound:
         # create user
         data_dict = {
@@ -43,8 +43,9 @@ def create_internal_org():
                            + u"missing a dataset, please contact Paul Müller.",
             "title": "Guck Division Archive"
         }
-        organization_create(context=admin_context(),
-                            data_dict=data_dict)
+        org_dict = organization_create(context=admin_context(),
+                                       data_dict=data_dict)
+    return org_dict
 
 
 def load_sha256sum(path):
@@ -95,44 +96,46 @@ def import_dataset(sha256_path):
     else:
         raise ValueError("No dataset file for {}!".format(sha256_path))
 
-    # create the dataset
-    dataset_dict = make_dataset_dict(resource_depot_path)
+    # create the dataset dictionary for the given resource
+    ds_dict_skeleton = make_dataset_dict(resource_depot_path)
 
     package_show = logic.get_action("package_show")
     package_create = logic.get_action("package_create")
     try:
-        package_show(context=admin_context(),
-                     data_dict={"id": dataset_dict["name"]})
+        ds_dict = package_show(context=admin_context(),
+                               data_dict={"id": ds_dict_skeleton["id"]})
     except logic.NotFound:
-        package_create(context=admin_context(), data_dict=dataset_dict)
+        ds_dict = package_create(context=admin_context(),
+                                 data_dict=ds_dict_skeleton)
+        assert ds_dict_skeleton["id"] == ds_dict["id"]
     else:
-        print("Skipping creation of {} (exists) ".format(dataset_dict["name"]),
+        print("Skipping creation of {} (exists) ".format(ds_dict["name"]),
               end="\r")
 
     # Obtain the .rtdc resource identifier
-    rtdc_id = make_id([dataset_dict["id"],
-                       resource_depot_path.name,
-                       load_sha256sum(resource_depot_path)])
+    res_dc_id = make_id([ds_dict["id"],
+                         resource_depot_path.name,
+                         load_sha256sum(resource_depot_path)])
 
     resource_show = logic.get_action("resource_show")
     try:
-        resource_show(context=admin_context(), data_dict={"id": rtdc_id})
+        resource_show(context=admin_context(), data_dict={"id": res_dc_id})
     except logic.NotFound:
         # make link to condensed  before importing the resource
         # (to avoid conflicts with automatic generation of condensed file)
-        import_rtdc_prepare_condensed(rtdc_id, condensed_depot_path)
+        import_rtdc_prepare_condensed(res_dc_id, condensed_depot_path)
         # import all resources (except the condensed and sha256sum file)
         for path in files:
-            import_resource(dataset_dict,
+            import_resource(ds_dict,
                             resource_depot_path=path,
                             sha256_sum=load_sha256sum(path))
     else:
-        print("Skipping resource for {} (exists)".format(
-            dataset_dict["name"]), end="\r")
+        print(f'Skipping resource for {ds_dict["name"]} (exists)',
+              end="\r")
     # activate the dataset
     package_patch = logic.get_action("package_patch")
     package_patch(context=admin_context(),
-                  data_dict={"id": dataset_dict["id"],
+                  data_dict={"id": ds_dict["id"],
                              "state": "active"})
 
 
@@ -257,14 +260,13 @@ def internal_upgrade(start_date="2000-01-01", end_date="3000-01-01"):
 
 
 def make_dataset_dict(path):
-    dcor = {}
-    dcor["owner_org"] = INTERNAL_ORG
-    dcor["private"] = True
-    dcor["license_id"] = "none"
+    org_dict = create_internal_org()
     stem = "_".join(path.name.split("_")[:3])
-    dcor["name"] = stem
-    dcor["state"] = "draft"
-    dcor["organization"] = {"id": INTERNAL_ORG}
+    ds_dict = {"owner_org": org_dict["id"],
+               "private": True,
+               "license_id": "none",
+               "name": stem,
+               "state": "draft"}
 
     with dclab.new_dataset(path) as ds:
         # get the title from the logs
@@ -278,13 +280,13 @@ def make_dataset_dict(path):
             dirs.remove(string)
 
     dirs[-1] = dirs[-1].rsplit(".", 1)[0]  # remove suffix
-    dcor["title"] = " ".join([d.replace("_", " ") for d in dirs])
+    ds_dict["title"] = " ".join([d.replace("_", " ") for d in dirs])
     # guess author
-    dcor["authors"] = "unknown"
+    ds_dict["authors"] = "unknown"
 
-    dcor["notes"] = "The location of the original dataset is {}.".format(op)
-    dcor["id"] = make_id([load_sha256sum(path), dcor["name"]])
-    return dcor
+    ds_dict["notes"] = "The location of the original dataset is {}.".format(op)
+    ds_dict["id"] = make_id([load_sha256sum(path), ds_dict["name"]])
+    return ds_dict
 
 
 def upgrade_dataset(sha256_path):
@@ -292,7 +294,7 @@ def upgrade_dataset(sha256_path):
     # actual files present
     files_act = sorted(root.glob(sha256_path.name.split(".")[0] + "*"))
     files_act = [ff for ff in files_act if not ff.suffix == ".sha256sums"]
-    # files registered in tha sha256sum
+    # files registered in the sha256sum
     files_reg = sorted([root / pp.split("  ", 1)[1] for pp in
                         sha256_path.read_text().split("\n") if pp])
     # restrict search to .rtdc files
@@ -303,7 +305,7 @@ def upgrade_dataset(sha256_path):
         for ff in files_act:
             if not ff.name.count("condensed") and ff not in files_reg:
                 path_new = ff
-                sha256_new = sha_256(ff)
+                sha256_new = sha256sum(ff)
                 break
         else:
             raise ValueError(
@@ -354,9 +356,9 @@ def upgrade_dataset(sha256_path):
                                             "order": [rtdc_id]})
 
         # Finally, compute the sha256 sums and add them to the sum file.
-        sha256sums = {path_new.name: sha_256(path_new),
-                      path_cond.name: sha_256(path_cond)}
+        sha_sums = {path_new.name: sha256sum(path_new),
+                    path_cond.name: sha256sum(path_cond)}
         with sha256_path.open("r+") as fd:
             fd.seek(0, 2)  # seek to end of file
-            for kk in sorted(sha256sums.keys()):
-                fd.write("{}  {}\n".format(sha256sums[kk], kk))
+            for kk in sorted(sha_sums.keys()):
+                fd.write("{}  {}\n".format(sha_sums[kk], kk))

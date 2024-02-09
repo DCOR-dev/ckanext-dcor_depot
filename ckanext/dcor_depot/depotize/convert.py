@@ -64,7 +64,7 @@ def convert(pathtxt, verbose=1):
                                     t=mtime[:4],
                                     hex=hash0[:6])
 
-            sha256sums = {}
+            sha_sums = {}
             path_out = ddir / (stem + "_v1.rtdc")
             path_out_cond = ddir / (stem + "_v1_condensed.rtdc")
             path_sums = ddir / (stem + ".sha256sums")
@@ -92,7 +92,7 @@ def convert(pathtxt, verbose=1):
                     adi = (stem + "_ad{}_{}".format(jj + 1, ff.name.lower()))
                     cpp = ddir / adi
                     shutil.copyfile(ff, cpp)
-                    sha256sums[adi] = sha256(cpp)
+                    sha_sums[adi] = sha256(cpp)
                     copyfiles.append({"index": jj + 1,
                                       "path": str(ff.relative_to(relp)),
                                       "hash": sha256(ff),
@@ -153,11 +153,11 @@ def convert(pathtxt, verbose=1):
                 unused.append(files[0])
                 continue
             # compute sha256 sums
-            sha256sums[path_out.name] = sha256(path_out)
-            sha256sums[path_out_cond.name] = sha256(path_out_cond)
+            sha_sums[path_out.name] = sha256(path_out)
+            sha_sums[path_out_cond.name] = sha256(path_out_cond)
             with open(path_sums, "w") as fd:
-                for kk in sorted(sha256sums.keys()):
-                    fd.write("{}  {}\n".format(sha256sums[kk], kk))
+                for kk in sorted(sha_sums.keys()):
+                    fd.write("{}  {}\n".format(sha_sums[kk], kk))
     # Write unused files
     with pathtxt.with_name("convert_excluded.txt").open("w") as fd:
         fd.writelines([str(f)+"\n" for f in unused])

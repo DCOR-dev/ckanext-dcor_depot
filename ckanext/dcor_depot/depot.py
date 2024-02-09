@@ -1,8 +1,8 @@
-from functools import lru_cache
 import hashlib
 import pathlib
+import warnings
 
-import dclab
+from dcor_shared import sha256sum
 
 #: Content of the dummy file created when importing data.
 DUMMY_BYTES = b"[Data import pending]"
@@ -39,6 +39,8 @@ def obj2str(obj):
                          format(obj.__class__))
 
 
-@lru_cache(maxsize=100)
 def sha_256(path, block_size=2**20):
-    return dclab.util.hashfile(path, constructor=hashlib.sha256)
+    warnings.warn(
+        "sha_256 is deprecated, please use dcor_shared.sha256sum instead",
+        DeprecationWarning)
+    return sha256sum(path)

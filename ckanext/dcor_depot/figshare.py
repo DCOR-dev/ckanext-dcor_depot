@@ -11,11 +11,11 @@ import tempfile
 
 from ckan import logic
 
-from dcor_shared import get_resource_path
+from dcor_shared import get_resource_path, sha256sum
 from html2text import html2text
 import requests
 
-from .depot import DUMMY_BYTES, make_id, sha_256
+from .depot import DUMMY_BYTES, make_id
 from .orgs import FIGSHARE_ORG
 from .paths import FIGSHARE_DEPOT
 from .util import check_md5
@@ -148,7 +148,7 @@ def import_dataset(doi):
                         "package_id": dcor_dict["name"],
                         "upload": upload,
                         "name": res["name"],
-                        "sha256": sha_256(dlpath),
+                        "sha256": sha256sum(dlpath),
                         "size": dlpath.stat().st_size,
                         "format": mimetypes.guess_type(dlpath)[0],
                     }

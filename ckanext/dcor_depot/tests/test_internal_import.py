@@ -38,7 +38,7 @@ def run_around_tests():
     remove_depotized()
 
 
-@pytest.mark.ckan_config('ckan.plugins', 'dcor_depot dcor_schemas dc_view')
+@pytest.mark.ckan_config('ckan.plugins', 'dcor_depot dcor_schemas')
 @pytest.mark.usefixtures('clean_db', 'with_request_context')
 # We are not applying the synchronous run of jobs, because this would
 # cause a dead lock (waiting for symlinks).

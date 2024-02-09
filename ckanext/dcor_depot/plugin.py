@@ -3,7 +3,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from rq.job import Job
 
-from dcor_shared import get_ckan_config_option, s3
+from dcor_shared import s3, s3cc
 
 from .cli import get_commands
 from .jobs import symlink_user_dataset, migrate_resource_to_s3
@@ -32,20 +32,8 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
             orig_dict = toolkit.get_action("package_show")(
                 context=context, data_dict={"id": data_dict["id"]})
             # Make sure the S3 resources get the "public:true" tag.
-            bucket_name = get_ckan_config_option(
-                "dcor_object_store.bucket_name").format(
-                organization_id=orig_dict["organization"]["id"])
             for res in orig_dict["resources"]:
-                if res.get("s3_available", False):
-                    rid = res["id"]
-                    object_names = [
-                        f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
-                        f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
-                    ]
-                    for object_name in object_names:
-                        s3.make_object_public(bucket_name=bucket_name,
-                                              object_name=object_name,
-                                              missing_ok=True)
+                s3cc.make_resource_public(res["id"])
 
     # IResourceController
     def after_resource_create(self, context, resource):
