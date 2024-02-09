@@ -9,7 +9,7 @@ DUMMY_BYTES = b"[Data import pending]"
 
 
 def make_id(data):
-    """Return a CKAN identifier by md5summing the data
+    """Return a CKAN identifier by md5-summing the data
 
     This is used to generate reproducible dataset and resource
     identifiers.

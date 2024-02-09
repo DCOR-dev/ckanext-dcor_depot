@@ -34,8 +34,8 @@ def create_figshare_org():
     organization_create = logic.get_action("organization_create")
     # check if organization exists
     try:
-        organization_show(context=admin_context(),
-                          data_dict={"id": FIGSHARE_ORG})
+        org_dict = organization_show(context=admin_context(),
+                                     data_dict={"id": FIGSHARE_ORG})
     except logic.NotFound:
         # create user
         data_dict = {
@@ -45,8 +45,9 @@ def create_figshare_org():
             + u"here, please send the figshare DOI to Paul Müller.",
             "title": "Figshare mirror"
         }
-        organization_create(context=admin_context(),
-                            data_dict=data_dict)
+        org_dict = organization_create(context=admin_context(),
+                                       data_dict=data_dict)
+    return org_dict
 
 
 def download_file(url, path):
@@ -88,20 +89,22 @@ def import_dataset(doi):
         raise ConnectionError(f"Error accessing {url}: {req.reason}")
     figshare_dict = req.json()
     # Convert the dictionary to DCOR and create draft
-    dcor_dict = map_figshare_to_dcor(figshare_dict)
+    ds_dict_figshare = map_figshare_to_dcor(figshare_dict)
 
     package_show = logic.get_action("package_show")
     package_create = logic.get_action("package_create")
     try:
-        package_show(context=admin_context(),
-                     data_dict={"id": dcor_dict["name"]})
+        ds_dict = package_show(context=admin_context(),
+                               data_dict={"id": ds_dict_figshare["name"]})
     except logic.NotFound:
-        package_create(context=admin_context(), data_dict=dcor_dict)
+        ds_dict = package_create(context=admin_context(),
+                                 data_dict=ds_dict_figshare)
+        assert ds_dict["id"] == ds_dict_figshare["id"]
     else:
-        print(f"Skipping creation of {dcor_dict['name']} (exists)")
+        print(f"Skipping creation of {ds_dict['name']} (exists)")
 
     # Download/Import the resources
-    dldir = FIGSHARE_DEPOT / dcor_dict["name"]
+    dldir = FIGSHARE_DEPOT / ds_dict["name"]
     dldir.mkdir(parents=True, exist_ok=True)
 
     resource_create = logic.get_action("resource_create")
@@ -109,7 +112,7 @@ def import_dataset(doi):
         if not res["is_link_only"]:
             # check if resource exists
             pkg = package_show(context=admin_context(),
-                               data_dict={"id": dcor_dict["name"]})
+                               data_dict={"id": ds_dict["id"]})
             names = [r["name"] for r in pkg["resources"]]
             if res["name"] in names:
                 print(f"Resource {res['name']} exists.")
@@ -143,8 +146,8 @@ def import_dataset(doi):
                 rs = resource_create(
                     context=admin_context(),
                     data_dict={
-                        "id": make_id([dcor_dict["id"], res["supplied_md5"]]),
-                        "package_id": dcor_dict["name"],
+                        "id": make_id([ds_dict["id"], res["supplied_md5"]]),
+                        "package_id": ds_dict["name"],
                         "upload": upload,
                         "name": res["name"],
                         "sha256": sha256sum(dlpath),
@@ -165,7 +168,7 @@ def import_dataset(doi):
     # activate the dataset
     package_patch = logic.get_action("package_patch")
     package_patch(context=admin_context(),
-                  data_dict={"id": dcor_dict["id"],
+                  data_dict={"id": ds_dict["id"],
                              "state": "active"})
     print("Done.")
 
