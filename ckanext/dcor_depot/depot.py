@@ -15,7 +15,7 @@ def make_id(data):
     identifiers.
     """
     m = hashlib.md5(obj2str(data)).hexdigest()
-    return "{}-{}-{}-{}-{}".format(m[:8], m[8:12], m[12:16], m[16:20], m[20:])
+    return f"{m[:8]}-{m[8:12]}-{m[12:16]}-{m[16:20]}-{m[20:]}"
 
 
 def obj2str(obj):

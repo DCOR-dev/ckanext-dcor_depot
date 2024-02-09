@@ -146,9 +146,8 @@ if True:  # pragma: no cover
         except BaseException:
             if not os.path.exists(versionfile):
                 # Only issue a warning if the file does not exist.
-                msg = "Could not write package version to {}.".format(
-                    versionfile)
-                warnings.warn(msg)
+                warnings.warn(
+                    f"Could not write package version to {versionfile}.")
 
     hdir = dirname(abspath(__file__))
     if basename(__file__) == "conf.py" and "name" in locals():
@@ -183,7 +182,7 @@ if True:  # pragma: no cover
         print(traceback.format_exc())
         ctime = os.stat(__file__)[8]
         longversion = time.strftime("%Y.%m.%d-%H-%M-%S", time.gmtime(ctime))
-        print("Using creation time as version: {}".format(longversion))
+        print(f"Using creation time as version: {longversion}")
 
     if not hasattr(sys, 'frozen'):
         # Save the version to `_version_save.py` to allow distribution using

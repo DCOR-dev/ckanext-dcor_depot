@@ -70,7 +70,5 @@ def get_depot_path_for_resource(res_id, res_name, pkg_dict):
                            / (usr_name + "-" + org)
                            / pkg_id[:2]
                            / pkg_id[2:4]
-                           / "{}_{}_{}".format(pkg_name,
-                                               res_id,
-                                               res_name))
+                           / f"{pkg_name}_{res_id}_{res_name}")
     return resource_depot_path

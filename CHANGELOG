@@ -1,5 +1,6 @@
 0.13.9
  - ref: migrate to dcor_shared 0.7.2
+ - ref: use f-strings
 0.13.8
  - maintenance release
 0.13.7

@@ -23,7 +23,7 @@ def patch_resource_noauth(package_id, resource_id, data_dict):
     """Patch a resource using package_revise"""
     package_revise = logic.get_action("package_revise")
     revise_dict = {"match": {"id": package_id},
-                   "update__resources__{}".format(resource_id): data_dict}
+                   f"update__resources__{resource_id}": data_dict}
     package_revise(context=admin_context(), data_dict=revise_dict)
 
 
@@ -75,9 +75,7 @@ def symlink_user_dataset(pkg, usr, resource):
                   / (user + "-" + org)
                   / pkg["id"][:2]
                   / pkg["id"][2:4]
-                  / "{}_{}_{}".format(pkg["name"],
-                                      resource["id"],
-                                      resource["name"]))
+                  / f"{pkg['name']}_{resource['id']}_{resource['name']}")
 
     depot_path.parent.mkdir(exist_ok=True, parents=True)
 

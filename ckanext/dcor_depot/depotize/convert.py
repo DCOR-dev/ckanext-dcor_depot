@@ -37,7 +37,7 @@ def convert(pathtxt, verbose=1):
 
     for ii, line in enumerate(data):
         if verbose >= 1:
-            progr = "Converting: {:.2f}%".format(ii/length*100)
+            progr = f"Converting: {ii/length:.2%}"
             if verbose >= 2:
                 progr += ": {}".format(line.split("\t")[0])
             print(progr, end="\r")
@@ -89,7 +89,7 @@ def convert(pathtxt, verbose=1):
             if len(files) > 1:
                 adfiles = sorted(files[1:], key=lambda p: p.name.lower())
                 for jj, ff in enumerate(adfiles):
-                    adi = (stem + "_ad{}_{}".format(jj + 1, ff.name.lower()))
+                    adi = (stem + f"_ad{jj+1}_{ff.name.lower()}")
                     cpp = ddir / adi
                     shutil.copyfile(ff, cpp)
                     sha_sums[adi] = sha256(cpp)
@@ -109,7 +109,7 @@ def convert(pathtxt, verbose=1):
                 except BaseException:
                     delete_stem(ddir, stem)
                     if verbose >= 1:
-                        print("!! Problem compressing {}".format(files[0]))
+                        print(f"!! Problem compressing {files[0]}")
                     unused.append(files[0])
                     continue
             else:
@@ -124,8 +124,7 @@ def convert(pathtxt, verbose=1):
                 except fmt_tdms.event_contour.ContourIndexingError:
                     delete_stem(ddir, stem)
                     if verbose >= 1:
-                        print(
-                            "!! ContourIndexingError for {}".format(files[0]))
+                        print(f"!! ContourIndexingError for {files[0]}")
                     unused.append(files[0])
                     continue
                 except KeyboardInterrupt:
@@ -133,7 +132,7 @@ def convert(pathtxt, verbose=1):
                 except BaseException:
                     delete_stem(ddir, stem)
                     if verbose >= 1:
-                        print("!! OTHER ERROR for {}".format(files[0]))
+                        print(f"!! OTHER ERROR for {files[0]}")
                     unused.append(files[0])
                     continue
             # append dcor history log file
@@ -149,7 +148,7 @@ def convert(pathtxt, verbose=1):
             except BaseException:
                 delete_stem(ddir, stem)
                 if verbose >= 1:
-                    print("!! Condensing Error for {}".format(files[0]))
+                    print(f"!! Condensing Error for {files[0]}")
                 unused.append(files[0])
                 continue
             # compute sha256 sums
@@ -157,7 +156,7 @@ def convert(pathtxt, verbose=1):
             sha_sums[path_out_cond.name] = sha256(path_out_cond)
             with open(path_sums, "w") as fd:
                 for kk in sorted(sha_sums.keys()):
-                    fd.write("{}  {}\n".format(sha_sums[kk], kk))
+                    fd.write(f"{sha_sums[kk]}  {kk}\n")
     # Write unused files
     with pathtxt.with_name("convert_excluded.txt").open("w") as fd:
         fd.writelines([str(f)+"\n" for f in unused])

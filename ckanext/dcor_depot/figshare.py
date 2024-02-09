@@ -81,12 +81,11 @@ def import_dataset(doi):
     # Convert DOI to url
     uid = doi.split(".")[-2]
     ver = doi.split(".")[-1].strip("v ")
-    url = "{}/articles/{}/versions/{}".format(FIGSHARE_BASE, uid, ver)
+    url = f"{FIGSHARE_BASE}/articles/{uid}/versions/{ver}"
     # Get the JSON representation of the metadata
     req = requests.get(url)
     if not req.ok:
-        raise ConnectionError("Error accessing {}: {}".format(
-            url, req.reason))
+        raise ConnectionError(f"Error accessing {url}: {req.reason}")
     figshare_dict = req.json()
     # Convert the dictionary to DCOR and create draft
     dcor_dict = map_figshare_to_dcor(figshare_dict)
@@ -99,7 +98,7 @@ def import_dataset(doi):
     except logic.NotFound:
         package_create(context=admin_context(), data_dict=dcor_dict)
     else:
-        print("Skipping creation of {} (exists)".format(dcor_dict["name"]))
+        print(f"Skipping creation of {dcor_dict['name']} (exists)")
 
     # Download/Import the resources
     dldir = FIGSHARE_DEPOT / dcor_dict["name"]
@@ -113,7 +112,7 @@ def import_dataset(doi):
                                data_dict={"id": dcor_dict["name"]})
             names = [r["name"] for r in pkg["resources"]]
             if res["name"] in names:
-                print("Resource {} exists.".format(res["name"]))
+                print(f"Resource {res['name']} exists.")
                 continue
             # Download/Verify resource
             dlpath = dldir / res["name"]
@@ -123,9 +122,9 @@ def import_dataset(doi):
                 except ValueError:
                     download_file(res["download_url"], dlpath)
                 else:
-                    print("Using existing {}...".format(dlpath))
+                    print(f"Using existing {dlpath}...")
             else:
-                print("Downloading {}...".format(res["name"]))
+                print(f"Downloading {res['name']}...")
                 download_file(res["download_url"], dlpath)
             check_md5(dlpath, res["supplied_md5"])
 
@@ -181,12 +180,12 @@ def map_figshare_to_dcor(figs):
         if item.count("://"):
             reflist.append(item)
         else:
-            reflist.append("doi:{}".format(item))
+            reflist.append(f"doi:{item}")
     dcor["references"] = ", ".join(reflist)
     if figs["license"]["name"] == "CC0":
         dcor["license_id"] = "CC0-1.0"
     else:
-        raise ValueError("Unknown license: {}".format(figs["license"]))
+        raise ValueError(f"Unknown license: {figs['license']}")
     dcor["title"] = figs["title"]
     dcor["state"] = "draft"
     author_list = []
@@ -194,7 +193,7 @@ def map_figshare_to_dcor(figs):
         author_list.append(item["full_name"])
     dcor["authors"] = ", ".join(author_list)
     dcor["doi"] = figs["doi"]
-    dcor["name"] = "figshare-{}-v{}".format(figs["id"], figs["version"])
+    dcor["name"] = f"figshare-{figs['id']}-v{figs['version']}"
     dcor["organization"] = {"id": FIGSHARE_ORG}
     # markdownify and remove escapes "\_" with "_" (figshare-7771184-v2)
     dcor["notes"] = html2text(figs["description"]).replace("\_",  # noqa: W605

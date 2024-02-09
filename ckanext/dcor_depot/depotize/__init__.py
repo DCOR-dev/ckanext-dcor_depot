@@ -49,7 +49,7 @@ def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
                              )
         return
     if verbose >= 1:
-        print("Processing {}".format(path))
+        print(f"Processing {path}")
 
     if get_working_directory(path).exists() and skip_failed:
         print(" Skipping, because depotize failed in previous run!")
@@ -62,7 +62,7 @@ def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
     if verbose >= 1:
         for key in ["datasets", "datasets excluded", "files unknown"]:
             if scan_info[key]:
-                print(" {} {} (scan)".format(scan_info[key], key))
+                print(f" {scan_info[key]} {key} (scan)")
 
     if scan_info["files unknown"] and abort_on_unknown:
         print(" Aborting, because there are unknown files!")
@@ -78,7 +78,7 @@ def depotize(path, cleanup=True, abort_on_unknown=True, skip_failed=False,
     if verbose >= 1:
         for key in ["usable", "invalid", "violations", "alerts"]:
             if check_res[key]:
-                print(" {} {} (check)".format(len(check_res[key]), key))
+                print(f" {len(check_res[key])} {key} (check)")
 
     d_convert(datadir.parent / "check_usable.txt", verbose=verbose)
 

@@ -145,8 +145,7 @@ def test_symlink_user_dataset(enqueue_job_mock, create_with_upload,
     rpath = dcor_shared.get_resource_path(result["id"])
     assert rpath.exists()
     assert rpath.is_symlink()
-    assert rpath.resolve().name == "{}_{}_{}".format(dataset["name"],
-                                                     resource["id"],
-                                                     resource["name"])
+    assert rpath.resolve().name == \
+           f"{dataset['name']}_{resource['id']}_{resource['name']}"
     assert rpath.resolve().parent.name == dataset["id"][2:4]
     assert rpath.resolve().parent.parent.name == dataset["id"][:2]

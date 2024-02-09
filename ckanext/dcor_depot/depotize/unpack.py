@@ -8,9 +8,9 @@ from ..util import check_md5
 def get_working_directory(path):
     path = pathlib.Path(path)
     if not path.exists():
-        raise FileNotFoundError("File not found: {}".format(path))
+        raise FileNotFoundError(f"File not found: {path}")
     elif path.is_dir():
-        raise ValueError("File must be a tar archive: {}".format(path))
+        raise ValueError(f"File must be a tar archive: {path}")
     return path.with_name(path.name + "_depotize")
 
 

@@ -42,8 +42,8 @@ def find_associates(path, json_resource):
             if name.count("*"):
                 candidates = list(path.parent.glob(name))
                 if len(candidates) > 1:
-                    raise ValueError("Too many file candidates "
-                                     "for '{}' in '{}'!".format(name, path))
+                    raise ValueError(
+                        f"Too many file candidates for '{name}' in '{path}'!")
                 elif candidates:
                     name = candidates[0].name
                 else:
@@ -146,7 +146,7 @@ def scan(path, verbose=1):
                     # This might happen when a user records multiple
                     # measurements with different flow rates and does not
                     # increment the flow rate in Shape-In.
-                    message = "Two or more measurements use {}".format(pa)
+                    message = f"Two or more measurements use {pa}"
                     measurements_excl[pp] = message
                     # Also remove this item from already used measurements
                     for pm in list(measurements.keys()):
@@ -228,32 +228,31 @@ def scan(path, verbose=1):
 
     if verbose >= 2:
         for key in scan_info:
-            print("{}: {}".format(key, scan_info[key]))
+            print(f"{key}: {scan_info[key]}")
 
     # save results
     with open(pout / "summary.txt", "w") as fd:
         for key in scan_info:
-            fd.write("{}: {}\n".format(key, scan_info[key]))
+            fd.write(f"{key}: {scan_info[key]}\n")
 
     with open(pout / "measurements.txt", "w") as fd:
         for ms in measurements:
             if ms in copy_data:
-                cd = "\t" + "\t".join(["{}".format(mi)
-                                       for mi in copy_data[ms]])
+                cd = "\t" + "\t".join([f"{mi}" for mi in copy_data[ms]])
             else:
                 cd = ""
             try:
-                fd.write("{}{}\n".format(ms, cd))
+                fd.write(f"{ms}{cd}\n")
             except UnicodeEncodeError:
-                print(ascii("Bad file name: {}".format(ms)))
+                print(ascii(f"Bad file name: {ms}"))
 
     with open(pout / "measurements_excl.txt", "w") as fd:
         for ms in measurements_excl:
-            fd.write("{}\t{}\n".format(ms, measurements_excl[ms]))
+            fd.write(f"{ms}\t{measurements_excl[ms]}\n")
 
     with open(pout / "unsorted.txt", "w") as fd:
         for us in filelist:
-            fd.write("{}\n".format(us))
+            fd.write(f"{us}\n")
 
     return scan_info, scan_lists
 

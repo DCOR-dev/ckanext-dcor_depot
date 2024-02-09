@@ -54,7 +54,7 @@ def load_sha256sum(path):
     try:
         sums = sha256path.read_text().split("\n")
     except UnicodeDecodeError:
-        print("DAMN! Bad character in {}!".format(sha256path))
+        print(f"DAMN! Bad character in {sha256path}!")
         raise
     for line in sums:
         line = line.strip()
@@ -63,7 +63,7 @@ def load_sha256sum(path):
             if name == path.name:
                 return ss
     else:
-        raise ValueError("Could not find sha256 sum for {}!".format(path))
+        raise ValueError(f"Could not find sha256 sum for {path}!")
 
 
 def import_dataset(sha256_path):
@@ -80,11 +80,11 @@ def import_dataset(sha256_path):
             condensed_depot_path = ff
             break
     else:
-        raise ValueError("No condensed file for {}!".format(sha256_path))
+        raise ValueError(f"No condensed file for {sha256_path}!")
 
     if len(files) > 50:
-        raise ValueError("Found too many ({}) files for {}!".format(
-            len(files), sha256_path))
+        raise ValueError(
+            f"Found too many ({len(files)}) files for {sha256_path}!")
 
     files = [ff for ff in files if not ff.name.count("_condensed")]
     files = [ff for ff in files if not ff.suffix == ".sha256sums"]
@@ -94,7 +94,7 @@ def import_dataset(sha256_path):
             resource_depot_path = ff
             break
     else:
-        raise ValueError("No dataset file for {}!".format(sha256_path))
+        raise ValueError(f"No dataset file for {sha256_path}!")
 
     # create the dataset dictionary for the given resource
     ds_dict_skeleton = make_dataset_dict(resource_depot_path)
@@ -109,7 +109,7 @@ def import_dataset(sha256_path):
                                  data_dict=ds_dict_skeleton)
         assert ds_dict_skeleton["id"] == ds_dict["id"]
     else:
-        print("Skipping creation of {} (exists) ".format(ds_dict["name"]),
+        print(f"Skipping creation of {ds_dict['name']} (exists) ",
               end="\r")
 
     # Obtain the .rtdc resource identifier
@@ -147,7 +147,7 @@ def import_rtdc_prepare_condensed(rtdc_id, condensed_depot_path):
     rmpath = get_resource_path(rtdc_id, create_dirs=True)
     # This path should not exist (checked above)
     rmpath_c = rmpath.with_name(rmpath.name + "_condensed.rtdc")
-    assert not rmpath_c.exists(), "Should not exist: {}".format(rmpath_c)
+    assert not rmpath_c.exists(), f"Should not exist: {rmpath_c}"
     rmpath_c.symlink_to(condensed_depot_path)
 
 
@@ -167,7 +167,7 @@ def import_resource(dataset_dict, resource_depot_path, sha256_sum,
     resource_create = logic.get_action("resource_create")
     # import the resources
     tmp = pathlib.Path(tempfile.mkdtemp(prefix="import_"))
-    print("  - importing {}".format(path))
+    print(f"  - importing {path}")
     # use dummy file (workaround for MemoryError during upload)
     upath = tmp / path_name
     with upath.open("wb") as fd:
@@ -284,7 +284,7 @@ def make_dataset_dict(path):
     # guess author
     ds_dict["authors"] = "unknown"
 
-    ds_dict["notes"] = "The location of the original dataset is {}.".format(op)
+    ds_dict["notes"] = f"The location of the original dataset is {op}."
     ds_dict["id"] = make_id([load_sha256sum(path), ds_dict["name"]])
     return ds_dict
 
@@ -308,20 +308,19 @@ def upgrade_dataset(sha256_path):
                 sha256_new = sha256sum(ff)
                 break
         else:
-            raise ValueError(
-                "Could not find new version for {}!".format(sha256_path))
+            raise ValueError(f"Could not find new version for {sha256_path}!")
         # first, create a condensed version
         path_cond = path_new.with_name(path_new.stem + "_condensed.rtdc")
         if path_cond.exists():
-            print("Recreating condensed dataset {}".format(path_cond))
+            print(f"Recreating condensed dataset {path_cond}")
             path_cond.unlink()
         else:
-            print("Creating condensed dataset {}".format(path_cond))
+            print(f"Creating condensed dataset {path_cond}")
 
         try:
             cli.condense(path_out=path_cond, path_in=path_new)
         except BaseException:
-            print("!! Condensing Error for {}".format(path_new))
+            print(f"!! Condensing Error for {path_new}")
             sys.exit(1)
         # now, append the resource to the dataset
         dataset_name = "_".join(path_new.name.split("_")[:3])
@@ -346,8 +345,8 @@ def upgrade_dataset(sha256_path):
                             resource_depot_path=path_new,
                             sha256_sum=sha256_new)
         else:
-            print("Skipping resource for {} (exists)".format(
-                dataset_dict["name"]), end="\r")
+            print(f"Skipping resource for {dataset_dict['name']} (exists)",
+                  end="\r")
 
         # Now make the new resource the first resource in the dataset
         package_resource_reorder = logic.get_action("package_resource_reorder")
@@ -361,4 +360,4 @@ def upgrade_dataset(sha256_path):
         with sha256_path.open("r+") as fd:
             fd.seek(0, 2)  # seek to end of file
             for kk in sorted(sha_sums.keys()):
-                fd.write("{}  {}\n".format(sha_sums[kk], kk))
+                fd.write(f"{sha_sums[kk]}  {kk}\n")

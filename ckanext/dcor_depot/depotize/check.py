@@ -97,7 +97,7 @@ def check(pathtxt, verbose=1):
                 continue
             except BaseException:
                 if verbose >= 1:
-                    print("!!! OTHER PROBELM WITH {}".format(path))
+                    print(f"!!! OTHER PROBELM WITH {path}")
                 invalid.append(path)
                 continue
             finally:
@@ -108,8 +108,7 @@ def check(pathtxt, verbose=1):
                     pass
             if not use_wrong_event_count(viol):
                 if verbose >= 1:
-                    print("!!! Excluded due to bad event counts: {}".format(
-                        path))
+                    print(f"!!! Excluded due to bad event counts: {path}")
                 invalid.append(path)
                 continue
             for v in viol:
@@ -120,7 +119,7 @@ def check(pathtxt, verbose=1):
                     expected[expkey].append(path)
                 else:
                     if verbose >= 2:
-                        print("{}: {}".format(v, path))
+                        print(f"{v}: {path}")
                     if v not in violations:
                         violations[v] = []
                     violations[v].append(path)
@@ -144,43 +143,43 @@ def check(pathtxt, verbose=1):
             usable.append(line)
 
     if verbose >= 2:
-        print("Check took {:.0f} mins.".format((time.time() - t0) / 60))
+        print(f"Check took {(time.time() - t0) / 60:.0f} minutes")
 
     with pathtxt.with_name("check_info.txt").open("w") as fd:
         for ik in sorted(information.keys()):
-            fd.write("[{}x]\t{}\n".format(len(information[ik]), ik))
+            fd.write(f"[{len(information[ik])}x]\t{ik}\n")
 
     with pathtxt.with_name("check_alerts.txt").open("w") as fd:
         for ik in sorted(alerts.keys()):
-            fd.write("[{}x]\t{}\n".format(len(alerts[ik]), ik))
+            fd.write(f"[{len(alerts[ik])}x]\t{ik}\n")
             for pal in alerts[ik]:
-                fd.write("{}\n".format(pal))
+                fd.write(f"{pal}\n")
             fd.write("\n")
 
     with pathtxt.with_name("check_violations.txt").open("w") as fd:
         for ik in sorted(violations.keys()):
-            fd.write("[{}x]\t{}\n".format(len(violations[ik]), ik))
+            fd.write(f"[{len(violations[ik])}x]\t{ik}\n")
             for pvi in violations[ik]:
-                fd.write("{}\n".format(pvi))
+                fd.write(f"{pvi}\n")
             fd.write("\n")
 
     with pathtxt.with_name("check_times.txt").open("w") as fd:
         for dd in timefaults:
-            fd.write("[{}]\t{}\n".format(dd[0], dd[1]))
+            fd.write(f"[{dd[0]}]\t{dd[1]}\n")
 
     with pathtxt.with_name("check_invalid.txt").open("w") as fd:
         for pp in invalid:
-            fd.write("{}\n".format(pp))
+            fd.write(f"{pp}\n")
 
     with pathtxt.with_name("check_usable.txt").open("w") as fd:
         for pp in usable:
-            fd.write("{}\n".format(pp))
+            fd.write(f"{pp}\n")
 
     with pathtxt.with_name("check_expected_problems.txt").open("w") as fd:
         for ik in sorted(expected.keys()):
-            fd.write("[{}x]\t{}\n".format(len(expected[ik]), ik))
+            fd.write(f"[{len(expected[ik])}x]\t{ik}\n")
             for pvi in expected[ik]:
-                fd.write("{}\n".format(pvi))
+                fd.write(f"{pvi}\n")
             fd.write("\n")
 
     check_results = {
