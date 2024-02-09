@@ -8,7 +8,8 @@ import ckan.model as model
 import click
 
 from dcor_shared import (
-    DC_MIME_TYPES, s3, get_ckan_config_option, get_resource_path, sha256sum)
+    DC_MIME_TYPES, s3, s3cc, get_ckan_config_option, get_resource_path,
+    sha256sum)
 
 from . import app_res
 from .depotize import depotize
@@ -64,10 +65,13 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
     bucket_name = bucket_schema.format(organization_id=circle_id)
     for res_dict in dataset_dict["resources"]:
         rid = res_dict["id"]
-        paths = [f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"]
+        bucket_name, object_name = s3cc.get_s3_bucket_object_for_artifact(rid)
+        paths = [object_name]
         if res_dict["mimetype"] in DC_MIME_TYPES:
-            paths.append(f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}")
-            paths.append(f"preview/{rid[:3]}/{rid[3:6]}/{rid[6:]}")
+            paths.append(s3cc.get_s3_bucket_object_for_artifact(
+                rid, artifact="condensed")[1])
+            paths.append(s3cc.get_s3_bucket_object_for_artifact(
+                rid, artifact="preview")[1])
         s3_client, _, _ = s3.get_s3()
         for pp in paths:
             try:
@@ -134,88 +138,76 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                 data_dict={"id": dataset.owner_org})
         for resource in dataset.resources:
             res_dict = resource.as_dict()
-            rid = res_dict["id"]
-            ploc = str(get_resource_path(rid))
-            # Get bucket and object names
-            bucket_name = get_ckan_config_option(
-                "dcor_object_store.bucket_name").format(
-                organization_id=ds_dict["organization"]["id"])
-            objects = [(ploc,
-                        f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
-                        res_dict.get("sha256"))]
-            # condensed dataset
-            pcond = ploc + "_condensed.rtdc"
-            if pathlib.Path(pcond).exists():
-                objects.append((pcond,
-                                f"condensed/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
-                                None))
-            # preview image
-            pprev = ploc + "_preview.jpg"
-            if pathlib.Path(pprev).exists():
-                objects.append((pprev,
-                                f"preview/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
-                                None))
             if not res_dict.get("s3_available") or verify_existence:
-                # Upload the files to S3
-                for object_path, object_name, sha in objects:
-                    sha = sha or sha256sum(object_path)
-                    override = False  # no override by default
+                rid = res_dict["id"]
+                res_loc = str(get_resource_path(rid))
+                for artifact, suffix, obj_sha in [
+                    ("resource", "", res_dict.get("sha256")),
+                    ("preview", "_preview.jpg", None),
+                        ("condensed", "_condensed.rtdc", None)]:
+                    bucket_name, object_name = \
+                        s3cc.get_s3_bucket_object_for_artifact(
+                            resource_id=rid, artifact=artifact)
+                    s3_kw = dict(bucket_name=bucket_name,
+                                 object_name=object_name)
+                    local_path = res_loc + suffix
+                    # Only continue if the local file exists
+                    if pathlib.Path(local_path).exists():
+                        # compute sha256sum if not available
+                        obj_sha = obj_sha or sha256sum(local_path)
+                        override = False  # no override by default
 
-                    if verify_checksum and s3.object_exists(
-                            bucket_name=bucket_name, object_name=object_name):
-                        s3_sha256 = s3.compute_checksum(
-                            bucket_name=bucket_name,
-                            object_name=object_name)
-                        if s3_sha256 != sha:
-                            # Override only if the user requested it and
-                            # only if the SHA256 sum did not match.
-                            override = True
-
-                    try:
-                        s3_url = s3.upload_file(
-                            bucket_name=bucket_name,
-                            object_name=object_name,
-                            path=object_path,
-                            sha256=sha,
-                            private=ds_dict["private"],
-                            override=override,
-                        )
-                        if verify_checksum:
-                            click_echo(f"Verified {object_name}", nl)
-                        elif verify_existence:
-                            click_echo(f"Checked {object_name}", nl)
-                        else:
-                            click_echo(f"Uploaded {object_name}", nl)
-                        nl = True
-                    except FileNotFoundError:
-                        click_echo(f"Missing file {object_path}", nl)
-                        nl = True
-                    else:
-                        # Check if the s3 URLs have been set
-                        if ("s3_available" not in res_dict
-                                or "s3_url" not in res_dict):
-                            try:
-                                # Update the resource dictionary
-                                logic.get_action("resource_patch")(
-                                    context={
-                                        # https://github.com/ckan/
-                                        # ckan/issues/7787
-                                        "user": ds_dict["creator_user_id"],
-                                        "ignore_auth": True},
-                                    data_dict={"id": rid,
-                                               "s3_available": True,
-                                               "s3_url": s3_url})
-                            except BaseException:
-                                click_echo(
-                                    f"Failed resource {resource.name}", nl)
-                                nl = True
-                                click_echo(tb.format_exc(), nl)
+                        if verify_checksum and s3.object_exists(**s3_kw):
+                            s3_sha256 = s3.compute_checksum(**s3_kw)
+                            if s3_sha256 != obj_sha:
+                                # Override only if the user requested it and
+                                # only if the SHA256 sum did not match.
+                                override = True
+                        try:
+                            s3_url = s3.upload_file(
+                                path=local_path,
+                                sha256=obj_sha,
+                                private=ds_dict["private"],
+                                override=override,
+                                **s3_kw
+                            )
+                            if verify_checksum:
+                                click_echo(f"Verified {object_name}", nl)
+                            elif verify_existence:
+                                click_echo(f"Checked {object_name}", nl)
                             else:
-                                # Just set these here so in the next iteration
-                                # (for the condensed file), we don't update
-                                # the resource dictionary again.
-                                res_dict["s3_available"] = True
-                                res_dict["s3_url"] = s3_url
+                                click_echo(f"Uploaded {object_name}", nl)
+                            nl = True
+                        except FileNotFoundError:
+                            click_echo(f"Missing file {local_path}", nl)
+                            nl = True
+                        else:
+                            # Check if the s3 URLs have been set
+                            if ("s3_available" not in res_dict
+                                    or "s3_url" not in res_dict):
+                                try:
+                                    # Update the resource dictionary
+                                    logic.get_action("resource_patch")(
+                                        context={
+                                            # https://github.com/ckan/
+                                            # ckan/issues/7787
+                                            "user": ds_dict["creator_user_id"],
+                                            "ignore_auth": True},
+                                        data_dict={"id": rid,
+                                                   "s3_available": True,
+                                                   "s3_url": s3_url})
+                                except BaseException:
+                                    click_echo(
+                                        f"Failed resource {resource.name}", nl)
+                                    nl = True
+                                    click_echo(tb.format_exc(), nl)
+                                else:
+                                    # Just set these here so in the next
+                                    # iteration (for the condensed file), we
+                                    # don't update the resource dictionary
+                                    # again.
+                                    res_dict["s3_available"] = True
+                                    res_dict["s3_url"] = s3_url
             if delete_after_migration:
                 raise NotImplementedError("Deletion not implemented yet!")
 
