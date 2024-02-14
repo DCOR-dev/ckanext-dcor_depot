@@ -59,16 +59,18 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
         # This job should only be run if the S3 access is available
         if s3.is_available():
             jid_migrate_s3 = pkg_job_id + "migrates3"
-            toolkit.enqueue_job(migrate_resource_to_s3,
-                                [resource],
-                                title="Migrate resource to S3 object store",
-                                queue="dcor-normal",
-                                rq_kwargs={"timeout": 3600,
-                                           "job_id": jid_migrate_s3,
-                                           "depends_on": [
-                                               # symlink is general requirement
-                                               jid_symlink,
-                                               # upload requires SHA256 check
-                                               pkg_job_id + "sha256",
-                                           ]}
-                                )
+            if not Job.exists(jid_migrate_s3, connection=ckan_jobs_connect()):
+                toolkit.enqueue_job(migrate_resource_to_s3,
+                                    [resource],
+                                    title="Migrate resource to S3 object "
+                                          "store",
+                                    queue="dcor-normal",
+                                    rq_kwargs={"timeout": 3600,
+                                               "job_id": jid_migrate_s3,
+                                               "depends_on": [
+                                                   # general requirement
+                                                   jid_symlink,
+                                                   # requires SHA256 check
+                                                   pkg_job_id + "sha256",
+                                               ]}
+                                    )
