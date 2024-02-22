@@ -14,11 +14,11 @@ import ckanext.dcor_depot.jobs
 import dcor_shared
 import requests
 
-from .helper_methods import make_dataset, synchronous_enqueue_job
-from .helper_methods import create_with_upload_no_temp  # noqa: F401
+from dcor_shared.testing import make_dataset, synchronous_enqueue_job
+from dcor_shared.testing import create_with_upload_no_temp  # noqa: F401
 
 
-data_dir = pathlib.Path(__file__).parent / "data"
+data_path = pathlib.Path(__file__).parent / "data"
 
 
 # Deactivate the dcor_depot plugin, so that the automatic upload to S3
@@ -53,10 +53,11 @@ def test_cli_migrate_to_object_store(enqueue_job_mock,
                       'auth_user_obj': user_obj,
                       'user': user['name'],
                       'api_version': 3}
-    dataset = make_dataset(create_context, owner_org,
+    dataset = make_dataset(create_context,
+                           owner_org,
                            activate=False)
 
-    content = (data_dir / "calibration_beads_47.rtdc").read_bytes()
+    content = (data_path / "calibration_beads_47.rtdc").read_bytes()
     res_dict = create_with_upload_no_temp(
         content, 'test.rtdc',
         url="upload",
@@ -124,10 +125,11 @@ def test_cli_migrate_to_object_store_with_verify_existence(
                       'auth_user_obj': user_obj,
                       'user': user['name'],
                       'api_version': 3}
-    dataset = make_dataset(create_context, owner_org,
+    dataset = make_dataset(create_context,
+                           owner_org,
                            activate=False)
 
-    content = (data_dir / "calibration_beads_47.rtdc").read_bytes()
+    content = (data_path / "calibration_beads_47.rtdc").read_bytes()
     res_dict = create_with_upload_no_temp(
         content, 'test.rtdc',
         url="upload",
@@ -215,10 +217,11 @@ def test_cli_migrate_to_object_store_with_verify_checksum(
                       'auth_user_obj': user_obj,
                       'user': user['name'],
                       'api_version': 3}
-    dataset = make_dataset(create_context, owner_org,
+    dataset = make_dataset(create_context,
+                           owner_org,
                            activate=False)
 
-    content = (data_dir / "calibration_beads_47.rtdc").read_bytes()
+    content = (data_path / "calibration_beads_47.rtdc").read_bytes()
     res_dict = create_with_upload_no_temp(
         content, 'test.rtdc',
         url="upload",

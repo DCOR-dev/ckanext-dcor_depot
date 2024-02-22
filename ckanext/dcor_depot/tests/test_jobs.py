@@ -7,6 +7,7 @@ A common approach is to use the mock package to replace the
 ckan.plugins.toolkit.enqueue_job function with a mock that executes jobs
 synchronously instead of asynchronously
 """
+import pathlib
 from unittest import mock
 
 import pytest
@@ -19,7 +20,10 @@ from ckan.tests import helpers
 import ckanext.dcor_schemas.plugin
 import dcor_shared
 
-from .helper_methods import data_path, make_dataset, synchronous_enqueue_job
+from dcor_shared.testing import make_dataset, synchronous_enqueue_job
+
+
+data_path = pathlib.Path(__file__).parent / "data"
 
 
 @pytest.mark.ckan_config('ckan.plugins', 'dcor_depot dcor_schemas')
@@ -47,9 +51,12 @@ def test_migrate_to_s3_public_dataset(enqueue_job_mock, create_with_upload,
     create_context = {'ignore_auth': False,
                       'user': user['name'],
                       'api_version': 3}
-    ds_dict, rs_dict = make_dataset(create_context, owner_org,
-                                    create_with_upload=create_with_upload,
-                                    activate=True)
+    ds_dict, rs_dict = make_dataset(
+        create_context,
+        owner_org,
+        create_with_upload=create_with_upload,
+        resource_path=data_path / "calibration_beads_47.rtdc",
+        activate=True)
     # Check the resource
     resource = helpers.call_action("resource_show", id=rs_dict["id"])
     assert resource["s3_available"]
@@ -89,10 +96,13 @@ def test_migrate_to_s3_private_dataset(enqueue_job_mock, create_with_upload,
     create_context = {'ignore_auth': False,
                       'user': user['name'],
                       'api_version': 3}
-    ds_dict, rs_dict = make_dataset(create_context, owner_org,
-                                    create_with_upload=create_with_upload,
-                                    activate=True,
-                                    private=True)
+    ds_dict, rs_dict = make_dataset(
+        create_context,
+        owner_org,
+        create_with_upload=create_with_upload,
+        resource_path=data_path / "calibration_beads_47.rtdc",
+        activate=True,
+        private=True)
     # Check the resource
     resource = helpers.call_action("resource_show", id=rs_dict["id"])
     assert resource["s3_available"]
@@ -130,7 +140,8 @@ def test_symlink_user_dataset(enqueue_job_mock, create_with_upload,
     create_context = {'ignore_auth': False,
                       'user': user['name'],
                       'api_version': 3}
-    dataset = make_dataset(create_context, owner_org,
+    dataset = make_dataset(create_context,
+                           owner_org,
                            activate=False)
 
     content = (data_path / "calibration_beads_47.rtdc").read_bytes()

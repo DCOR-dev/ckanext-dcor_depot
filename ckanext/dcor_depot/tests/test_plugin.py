@@ -13,11 +13,11 @@ import ckanext.dcor_schemas.plugin
 
 from dcor_shared import get_ckan_config_option, get_resource_path, s3
 
-from .helper_methods import make_dataset, synchronous_enqueue_job
-from .helper_methods import create_with_upload_no_temp  # noqa: F401
+from dcor_shared.testing import make_dataset, synchronous_enqueue_job
+from dcor_shared.testing import create_with_upload_no_temp  # noqa: F401
 
 
-data_dir = pathlib.Path(__file__).parent / "data"
+data_path = pathlib.Path(__file__).parent / "data"
 
 
 # dcor_depot must come first, because jobs are run in sequence and the
@@ -59,6 +59,7 @@ def test_after_dataset_update_make_private_public_on_s3(
         create_context, owner_org,
         activate=True,
         create_with_upload=create_with_upload_no_temp,
+        resource_path=data_path / "calibration_beads_47.rtdc",
         private=True,
     )
 
