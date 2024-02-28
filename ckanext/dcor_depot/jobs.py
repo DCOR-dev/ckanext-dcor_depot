@@ -62,10 +62,15 @@ def migrate_resource_to_s3(resource):
 def symlink_user_dataset(pkg, usr, resource):
     """Symlink resource data to human-readable depot"""
     path = get_resource_path(resource["id"])
+    if not path.exists():
+        # nothing to do (skip, because resource is on S3 only)
+        return False
+
     org = pkg["organization"]["name"]
     if org in MANUAL_DEPOT_ORGS or path.is_symlink():
         # nothing to do (skip, because already symlinked)
         return False
+
     user = usr["name"]
     # depot path
     depot_path = (USER_DEPOT
