@@ -33,46 +33,6 @@ This plugin implements:
      ckan import-figshare
 
 
-- Populate an internal depot from RT-DC data stored in tar archives. This
-  is part of an effort to have automated imports of RT-DC data from other
-  sources. The idea is to move experimental data to the DCOR server in
-  tar archives and DCOR can then populate the internal depot with it.
-  The location of the internal depot is ``/data/depots/internal/``
-  and it follows a very specific directory structure
-  ``201X/2019-08/20/2019-08-20_1126_c083de*`` where the path is generated
-  from the acquisition date, time, and part of the hash (``c083de``) of
-  the original data file. According to this scheme, all files with the
-  same path stem belong to one dataset:
-
-  - ``2019-08-20_1126_c083de.sha256sums`` a file containing SHA256 sums
-  - ``2019-08-20_1126_c083de_v1.rtdc`` the actual measurement
-  - ``2019-08-20_1126_c083de_v1_condensed.rtdc`` the condensed dataset
-  - ``2019-08-20_1126_c083de_ad1_m001_bg.png`` an ancillary image
-  - ``2019-08-20_1126_c083de_ad2_m002_bg.png`` another ancillary image
-  - ...
-
-  ::
-
-     ckan depotize-archive
-
-
-- Import datasets from the internal depot. The previous command
-  ``depotize-archive`` just populates the depot directory structure.
-  To make the datasets available in CKAN, this step must be performed:
-
-  ::
-
-     ckan import-internal
-
-
-- Upgrade datasets from the internal depot. If you find issues or have to add
-  new versions of an .rtdc resource, simply create the `_v2.rtdc` files and
-  run this command:
-
-  ::
-
-     ckan upgrade-internal
-
 - CLI for symlinking datasets that have failed to symlink before:
 
   ::

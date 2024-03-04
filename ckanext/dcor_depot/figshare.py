@@ -10,16 +10,13 @@ from dcor_shared import get_ckan_config_option, s3
 from html2text import html2text
 import requests
 
+from .app_res import admin_context, append_ckan_resource_to_active_dataset
 from .depot import make_id
 from .orgs import FIGSHARE_ORG
 from .util import check_md5
 
 
 FIGSHARE_BASE = "https://api.figshare.com/v2"
-
-
-def admin_context():
-    return {'ignore_auth': True, 'user': 'default'}
 
 
 def create_figshare_org():
@@ -95,7 +92,6 @@ def import_dataset(doi):
 
     package_show = logic.get_action("package_show")
     package_create = logic.get_action("package_create")
-    package_revise = logic.get_action("package_revise")
 
     try:
         ds_dict = package_show(context=admin_context(),
@@ -140,21 +136,13 @@ def import_dataset(doi):
                     )
 
                 # Make sure the resource is in the CKAN database
-                names = [r["name"] for r in ds_dict["resources"]]
-                if res["name"] in names:
-                    print(f"Resource {res['name']} already in CKAN database")
-                else:
-                    print(f"Adding resource {res['name']} to CKAN database")
-                    package_revise(
-                        context=admin_context(),
-                        data_dict={"match__id": ds_dict["id"],
-                                   "update__resources__extend":
-                                       [{"id": rid,
-                                         "name": res["name"],
-                                         "s3_available": True,
-                                         }]
-                                   }
-                    )
+                append_ckan_resource_to_active_dataset(
+                    dataset_id=ds_dict["id"],
+                    res_dict={"id": rid,
+                              "name": res["name"],
+                              "s3_available": True,
+                              }
+                )
 
     # activate the dataset
     package_patch = logic.get_action("package_patch")

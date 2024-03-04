@@ -17,7 +17,8 @@ CKAN_RESOURCES = CKAN_STORAGE / "resources"
 #: Figshare data location on the backed-up block device
 FIGSHARE_DEPOT = DEPOT_STORAGE / "figshare"
 
-#: Internal archive data location
+#: Internal archive data location used for Guck archive at mpl.mpg.de
+#: (deprecated)
 INTERNAL_DEPOT = DEPOT_STORAGE / "internal"
 
 #: Resources itemized by user (contains the hostname)

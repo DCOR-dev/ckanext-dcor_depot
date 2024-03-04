@@ -1,4 +1,5 @@
 0.14.0
+ - BREANKING: remove `depotize` and `internal` submodules and functionalities
  - ref: migrate to dcor_shared 0.8.0
  - ref: use f-strings
  - ref: upload figshare depot data directly to S3

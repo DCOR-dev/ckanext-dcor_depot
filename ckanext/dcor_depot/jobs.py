@@ -58,6 +58,9 @@ def migrate_resource_to_s3(resource):
                 "s3_available": True,
                 "s3_url": s3_url})
 
+        return s3_url
+    return False
+
 
 def symlink_user_dataset(pkg, usr, resource):
     """Symlink resource data to human-readable depot"""

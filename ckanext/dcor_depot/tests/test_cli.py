@@ -75,7 +75,7 @@ def test_cli_migrate_to_object_store(enqueue_job_mock,
     result = cli.invoke(ckan_cli, ["dcor-migrate-resources-to-object-store"])
     assert "Done!" in result.output
     assert f"Migrating dataset {dataset['id']}" in result.output
-    assert f"Uploaded resource/{res_dict['id'][:3]}" in result.output
+    assert f"Uploaded resource {res_dict['id'][:3]}" in result.output
 
     # Make sure the upload worked
     resource = helpers.call_action("resource_show", id=res_dict["id"])
@@ -147,7 +147,7 @@ def test_cli_migrate_to_object_store_with_verify_existence(
 
     assert "Done!" in result.output
     assert f"Migrating dataset {dataset['id']}" in result.output
-    assert f"Uploaded resource/{res_dict['id'][:3]}" in result.output
+    assert f"Uploaded resource {res_dict['id'][:3]}" in result.output
 
     resource = helpers.call_action("resource_show", id=res_dict["id"])
     assert "s3_available" in resource
@@ -240,7 +240,7 @@ def test_cli_migrate_to_object_store_with_verify_checksum(
                                    "--verify-checksum"])
     assert "Done!" in result.output
     assert f"Migrating dataset {dataset['id']}" in result.output
-    assert f"Verified resource/{res_dict['id'][:3]}" in result.output
+    assert f"Verified resource {res_dict['id'][:3]}" in result.output
     resource = helpers.call_action("resource_show", id=res_dict["id"])
     assert "s3_available" in resource
     assert "s3_url" in resource
@@ -250,4 +250,4 @@ def test_cli_migrate_to_object_store_with_verify_checksum(
                           "--verify-checksum"])
     assert "Done!" in result.output
     assert f"Migrating dataset {dataset['id']}" in result.output
-    assert f"Verified resource/{res_dict['id'][:3]}" in result.output
+    assert f"Verified resource {res_dict['id'][:3]}" in result.output

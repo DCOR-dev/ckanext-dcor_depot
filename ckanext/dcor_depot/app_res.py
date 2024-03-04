@@ -1,74 +1,84 @@
-import pathlib
-import shutil
+import warnings
 
 from ckan import logic
-from dcor_shared import sha256sum
+from dcor_shared import get_ckan_config_option, s3, sha256sum
 
 from .depot import make_id
-from .internal import import_resource
-from . import paths
 
 
 def admin_context():
     return {'ignore_auth': True, 'user': 'default'}
 
 
-def append_resource(path, dataset_id, copy=True):
-    """Append a resource to a dataset, copying it to the correct path"""
+def append_ckan_resource_to_active_dataset(dataset_id, res_dict):
+    """Admin-only method to add a resource entry to a dataset
+
+    This method is used in cases where you have to append a resource
+    to a dataset that you have already uploaded or plan to upload to S3.
+
+    You should provide a meaningful resource dictionary containing a
+    resource ID (`"id"`) and the name of the resource (`"name"`).
+
+    If the ID specified already exists in the dataset, then nothing
+    is changed or updated.
+    """
+    for key in ["name", "id"]:
+        if key not in res_dict:
+            raise ValueError(f"You must provide '{key}' in `res_dict`")
 
     package_show = logic.get_action("package_show")
-    dataset_dict = package_show(context=admin_context(),
-                                data_dict={"id": dataset_id})
+    ds_dict = package_show(context=admin_context(),
+                           data_dict={"id": dataset_id})
 
-    path_hash = sha256sum(path)
-
-    # Create a resource ID from the dataset ID and the resource hash
-    resource_id = make_id([dataset_dict["id"],
-                           path.name,
-                           path_hash,
-                           ])
-
-    # Determine the resource depot path (matches ID in `import_resource`)
-    resource_depot_path = get_depot_path_for_resource(
-        res_id=resource_id,
-        res_name=path.name,
-        pkg_dict=dataset_dict
+    # Make sure the resource is in the CKAN database
+    for res_other in ds_dict["resources"]:
+        if res_dict["id"] == res_other["id"]:
+            print(f"Resource {res_dict['name']} already in CKAN database")
+            break
+    else:
+        print(f"Adding resource {res_dict['name']} to CKAN database")
+        package_revise = logic.get_action("package_revise")
+        package_revise(
+            context=admin_context(),
+            data_dict={"match__id": dataset_id,
+                       "update__resources__extend": [res_dict]
+                       }
         )
 
-    resource_show = logic.get_action("resource_show")
-    try:
-        resource_show(context=admin_context(), data_dict={"id": resource_id})
-    except logic.NotFound:
-        if copy:
-            shutil.copy2(path, resource_depot_path)
-        else:
-            pathlib.Path(path).rename(resource_depot_path)
-        # In contrast to the other importing methods (figshare, internal),
-        # we don't automatically add a condensed version of the dataset.
-        # I think it does not really matter where you do it, so it is
-        # probably fine to let the background workers do it.
-        # import the resource
-        import_resource(dataset_dict,
-                        resource_depot_path=resource_depot_path,
-                        sha256_sum=path_hash,
-                        resource_name=pathlib.Path(path).name,
-                        )
-    else:
-        print(f"Skipping resource {resource_id} (exists)", flush=True)
 
+def append_resource(path, dataset_id, copy=None):
+    """Append a resource to a dataset, copying it to the correct path"""
+    if copy is not None:
+        warnings.warn("The `copy` argument is deprecated since we moved to S3",
+                      DeprecationWarning)
 
-def get_depot_path_for_resource(res_id, res_name, pkg_dict):
-    user_show = logic.get_action("user_show")
-    usr_dict = user_show(context=admin_context(),
-                         data_dict={"id": pkg_dict["creator_user_id"]})
-    usr_name = usr_dict["name"]
-    pkg_id = pkg_dict["id"]
-    pkg_name = pkg_dict["name"]
-    org = pkg_dict["organization"]["name"]
-    # depot path
-    resource_depot_path = (paths.USER_DEPOT
-                           / (usr_name + "-" + org)
-                           / pkg_id[:2]
-                           / pkg_id[2:4]
-                           / f"{pkg_name}_{res_id}_{res_name}")
-    return resource_depot_path
+    package_show = logic.get_action("package_show")
+    ds_dict = package_show(context=admin_context(),
+                           data_dict={"id": dataset_id})
+
+    sha256 = sha256sum(path)
+
+    # Create a resource ID from the dataset ID and the resource hash
+    rid = make_id([ds_dict["id"], path.name, sha256])
+
+    # Upload the resource to S3
+    bucket_name = get_ckan_config_option(
+        "dcor_object_store.bucket_name").format(
+        organization_id=ds_dict["organization"]["id"])
+    object_name = f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"
+    s3_url = s3.upload_file(
+        bucket_name=bucket_name,
+        object_name=object_name,
+        path=path,
+        sha256=sha256,
+        private=ds_dict["private"],
+        override=False,
+    )
+
+    # Append the resource to the CKAN dataset entry
+    append_ckan_resource_to_active_dataset(dataset_id=ds_dict["id"],
+                                           res_dict={"id": rid,
+                                                     "name": path.name,
+                                                     "s3_available": True,
+                                                     "s3_url": s3_url,
+                                                     })
