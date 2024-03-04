@@ -45,7 +45,7 @@ setup(
         "boto3",
         "click",
         "dclab>=0.56.2",
-        "dcor_shared>=0.7.4",
+        "dcor_shared>=0.8.0",
         "h5py",
         "html2text==2019.8.11",
         "numpy",

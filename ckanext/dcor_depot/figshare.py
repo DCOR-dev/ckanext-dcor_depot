@@ -1,23 +1,17 @@
 """Import predefined datasets from figshare.com"""
-import cgi
-import grp
-import mimetypes
-import os
+import hashlib
 import pathlib
 import pkg_resources
-import pwd
-import shutil
 import tempfile
 
 from ckan import logic
 
-from dcor_shared import get_resource_path, sha256sum
+from dcor_shared import get_ckan_config_option, s3
 from html2text import html2text
 import requests
 
-from .depot import DUMMY_BYTES, make_id
+from .depot import make_id
 from .orgs import FIGSHARE_ORG
-from .paths import FIGSHARE_DEPOT
 from .util import check_md5
 
 
@@ -50,14 +44,22 @@ def create_figshare_org():
     return org_dict
 
 
-def download_file(url, path):
+def download_file(url, path, ret_sha256=False):
     """Download (large) file without big memory footprint"""
+    if ret_sha256:
+        hasher = hashlib.sha256()
+    else:
+        hasher = None
     path = pathlib.Path(path)
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         with path.open('wb') as fd:
-            for chunk in r.iter_content(chunk_size=8192):
+            for chunk in r.iter_content(chunk_size=2**20):
                 fd.write(chunk)
+                if ret_sha256:
+                    hasher.update(chunk)
+    if ret_sha256:
+        return hasher.hexdigest()
 
 
 def figshare(limit=0):
@@ -93,6 +95,8 @@ def import_dataset(doi):
 
     package_show = logic.get_action("package_show")
     package_create = logic.get_action("package_create")
+    package_revise = logic.get_action("package_revise")
+
     try:
         ds_dict = package_show(context=admin_context(),
                                data_dict={"id": ds_dict_figshare["name"]})
@@ -104,67 +108,54 @@ def import_dataset(doi):
         print(f"Skipping creation of {ds_dict['name']} (exists)")
 
     # Download/Import the resources
-    dldir = FIGSHARE_DEPOT / ds_dict["name"]
-    dldir.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory() as dldir:
+        for res in figshare_dict["files"]:
+            if not res["is_link_only"]:
+                rid = make_id([ds_dict["id"], res["supplied_md5"]])
 
-    resource_create = logic.get_action("resource_create")
-    for res in figshare_dict["files"]:
-        if not res["is_link_only"]:
-            # check if resource exists
-            pkg = package_show(context=admin_context(),
-                               data_dict={"id": ds_dict["id"]})
-            names = [r["name"] for r in pkg["resources"]]
-            if res["name"] in names:
-                print(f"Resource {res['name']} exists.")
-                continue
-            # Download/Verify resource
-            dlpath = dldir / res["name"]
-            if dlpath.exists():
-                try:
-                    check_md5(dlpath, res["supplied_md5"])
-                except ValueError:
-                    download_file(res["download_url"], dlpath)
+                # Make sure the resource is on S3
+                bucket_name = get_ckan_config_option(
+                    "dcor_object_store.bucket_name").format(
+                    organization_id=ds_dict["organization"]["id"])
+                object_name = f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"
+                if s3.object_exists(bucket_name=bucket_name,
+                                    object_name=object_name):
+                    print(f"Resource {res['name']} already on S3")
                 else:
-                    print(f"Using existing {dlpath}...")
-            else:
-                print(f"Downloading {res['name']}...")
-                download_file(res["download_url"], dlpath)
-            check_md5(dlpath, res["supplied_md5"])
+                    # download to and/or verify on disk
+                    print(f"Downloading {res['name']}...")
+                    dlpath = pathlib.Path(dldir) / res["name"]
+                    sha256 = download_file(res["download_url"], dlpath,
+                                           ret_sha256=True)
+                    check_md5(dlpath, res["supplied_md5"])
 
-            # use dummy file (workaround for MemoryError during upload)
-            tmp = pathlib.Path(tempfile.mkdtemp(prefix="dummy_"))
-            upath = tmp / res["name"]
-            with upath.open("wb") as fd:
-                fd.write(DUMMY_BYTES)
-            with upath.open("rb") as fd:
-                # This is a kind of hacky way of tricking CKAN into thinking
-                # that there is a file upload.
-                upload = cgi.FieldStorage()
-                upload.filename = res["name"]  # used in ResourceUpload
-                upload.file = fd  # used in ResourceUpload
-                upload.list.append(None)  # for boolean test in ResourceUpload
-                rs = resource_create(
-                    context=admin_context(),
-                    data_dict={
-                        "id": make_id([ds_dict["id"], res["supplied_md5"]]),
-                        "package_id": ds_dict["name"],
-                        "upload": upload,
-                        "name": res["name"],
-                        "sha256": sha256sum(dlpath),
-                        "size": dlpath.stat().st_size,
-                        "format": mimetypes.guess_type(dlpath)[0],
-                    }
-                )
-            shutil.rmtree(tmp, ignore_errors=True)
-            # create file system link to downloaded file
-            rpath = get_resource_path(rs["id"])
-            rpath.unlink()
-            rpath.symlink_to(dlpath)
-            # make www-data the owner of the resource
-            www_uid = pwd.getpwnam("www-data").pw_uid
-            www_gid = grp.getgrnam("www-data").gr_gid
-            os.chown(rpath.parent, www_uid, www_gid)
-            os.chown(rpath.parent.parent, www_uid, www_gid)
+                    # upload the resource to S3
+                    print(f"Uploading to S3 {res['name']}...")
+                    s3.upload_file(
+                        bucket_name=bucket_name,
+                        object_name=object_name,
+                        path=dlpath,
+                        sha256=sha256,
+                        private=ds_dict["private"],
+                    )
+
+                # Make sure the resource is in the CKAN database
+                names = [r["name"] for r in ds_dict["resources"]]
+                if res["name"] in names:
+                    print(f"Resource {res['name']} already in CKAN database")
+                else:
+                    print(f"Adding resource {res['name']} to CKAN database")
+                    package_revise(
+                        context=admin_context(),
+                        data_dict={"match__id": ds_dict["id"],
+                                   "update__resources__extend":
+                                       [{"id": rid,
+                                         "name": res["name"],
+                                         "s3_available": True,
+                                         }]
+                                   }
+                    )
+
     # activate the dataset
     package_patch = logic.get_action("package_patch")
     package_patch(context=admin_context(),
