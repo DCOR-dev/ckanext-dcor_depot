@@ -11,9 +11,8 @@ from html2text import html2text
 import requests
 
 from .app_res import admin_context, append_ckan_resource_to_active_dataset
-from .depot import make_id
 from .orgs import FIGSHARE_ORG
-from .util import check_md5
+from .util import check_md5, make_id
 
 
 FIGSHARE_BASE = "https://api.figshare.com/v2"

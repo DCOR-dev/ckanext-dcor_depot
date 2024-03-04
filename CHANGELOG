@@ -3,6 +3,7 @@
  - ref: migrate to dcor_shared 0.8.0
  - ref: use f-strings
  - ref: upload figshare depot data directly to S3
+ - ref: move methods from `depot` submodule to `util`
 0.13.8
  - maintenance release
 0.13.7

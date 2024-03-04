@@ -3,7 +3,7 @@ import warnings
 from ckan import logic
 from dcor_shared import get_ckan_config_option, s3, sha256sum
 
-from .depot import make_id
+from .util import make_id
 
 
 def admin_context():
