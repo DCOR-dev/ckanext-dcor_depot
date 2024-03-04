@@ -4,6 +4,7 @@
  - ref: use f-strings
  - ref: upload figshare depot data directly to S3
  - ref: move methods from `depot` submodule to `util`
+ - ref: append `_job` to background job method names
 0.13.8
  - maintenance release
 0.13.7

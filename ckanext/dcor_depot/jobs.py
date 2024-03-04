@@ -24,7 +24,7 @@ def patch_resource_noauth(package_id, resource_id, data_dict):
     package_revise(context=admin_context(), data_dict=revise_dict)
 
 
-def migrate_resource_to_s3(resource):
+def migrate_resource_to_s3_job(resource):
     """Migrate a resource to the S3 object store"""
     rid = resource["id"]
     # Make sure the resource is available for processing
@@ -62,7 +62,7 @@ def migrate_resource_to_s3(resource):
     return False
 
 
-def symlink_user_dataset(pkg, usr, resource):
+def symlink_user_dataset_job(pkg, usr, resource):
     """Symlink resource data to human-readable depot"""
     path = get_resource_path(resource["id"])
     if not path.exists():

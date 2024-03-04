@@ -6,7 +6,7 @@ from rq.job import Job
 from dcor_shared import s3, s3cc
 
 from .cli import get_commands
-from .jobs import symlink_user_dataset, migrate_resource_to_s3
+from .jobs import symlink_user_dataset_job, migrate_resource_to_s3_job
 
 
 class DCORDepotPlugin(plugins.SingletonPlugin):
@@ -48,7 +48,7 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
         pkg_job_id = f"{resource['package_id']}_{resource['position']}_"
         jid_symlink = pkg_job_id + "symlink"
         if not Job.exists(jid_symlink, connection=ckan_jobs_connect()):
-            toolkit.enqueue_job(symlink_user_dataset,
+            toolkit.enqueue_job(symlink_user_dataset_job,
                                 [pkg, usr, resource],
                                 title="Move and symlink user dataset",
                                 queue="dcor-short",
@@ -60,7 +60,7 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
         if s3.is_available():
             jid_migrate_s3 = pkg_job_id + "migrates3"
             if not Job.exists(jid_migrate_s3, connection=ckan_jobs_connect()):
-                toolkit.enqueue_job(migrate_resource_to_s3,
+                toolkit.enqueue_job(migrate_resource_to_s3_job,
                                     [resource],
                                     title="Migrate resource to S3 object "
                                           "store",
