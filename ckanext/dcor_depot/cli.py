@@ -8,8 +8,8 @@ import ckan.model as model
 import click
 
 from dcor_shared import (
-    DC_MIME_TYPES, s3, s3cc, get_ckan_config_option, get_resource_path,
-    sha256sum)
+    DC_MIME_TYPES, s3, s3cc, get_resource_info, get_resource_path, sha256sum
+)
 
 from . import app_res
 from .depotize import depotize
@@ -62,7 +62,8 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
     # with the S3 object tags.
     for res_dict in dataset_dict["resources"]:
         rid = res_dict["id"]
-        bucket_name, object_name = s3cc.get_s3_bucket_object_for_artifact(rid)
+        bucket_name, object_name = s3cc.get_s3_bucket_object_for_artifact(
+            rid, artifact="resource")
         paths = [object_name]
         if res_dict["mimetype"] in DC_MIME_TYPES:
             paths.append(s3cc.get_s3_bucket_object_for_artifact(
@@ -129,24 +130,17 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
     for dataset in datasets:
         nl = False
         click.echo(f"Migrating dataset {dataset.id}\r", nl=False)
-        ds_dict = dataset.as_dict()
-        ds_dict["organization"] = logic.get_action("organization_show")(
-                context={"user": ds_dict["creator_user_id"]},
-                data_dict={"id": dataset.owner_org})
         for resource in dataset.resources:
-            res_dict = resource.as_dict()
-            if not res_dict.get("s3_available") or verify_existence:
-                rid = res_dict["id"]
-                res_loc = str(get_resource_path(rid))
-                for artifact, suffix, obj_sha in [
-                    ("resource", "", res_dict.get("sha256")),
-                    ("preview", "_preview.jpg", None),
-                        ("condensed", "_condensed.rtdc", None)]:
-                    bucket_name, object_name = \
-                        s3cc.get_s3_bucket_object_for_artifact(
-                            resource_id=rid, artifact=artifact)
-                    s3_kw = dict(bucket_name=bucket_name,
-                                 object_name=object_name)
+            rid = resource.id
+            ds_dict, res_dict = get_resource_info(rid)
+            rid = res_dict["id"]
+            res_loc = str(get_resource_path(rid))
+            for artifact, suffix, obj_sha in [
+                ("resource", "", res_dict.get("sha256")),
+                ("preview", "_preview.jpg", None),
+                    ("condensed", "_condensed.rtdc", None)]:
+                if (not s3cc.artifact_exists(rid, artifact=artifact)
+                        or verify_existence):
                     local_path = res_loc + suffix
                     # Only continue if the local file exists
                     if pathlib.Path(local_path).exists():
@@ -154,26 +148,29 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                         obj_sha = obj_sha or sha256sum(local_path)
                         override = False  # no override by default
 
-                        if verify_checksum and s3.object_exists(**s3_kw):
-                            s3_sha256 = s3.compute_checksum(**s3_kw)
+                        if verify_checksum and s3cc.artifact_exists(
+                                rid, artifact=artifact):
+                            s3_sha256 = s3cc.compute_checksum(
+                                rid, artifact=artifact)
                             if s3_sha256 != obj_sha:
                                 # Override only if the user requested it and
                                 # only if the SHA256 sum did not match.
                                 override = True
                         try:
-                            s3_url = s3.upload_file(
-                                path=local_path,
+                            s3_url = s3cc.upload_artifact(
+                                resource_id=rid,
+                                path_artifact=local_path,
+                                artifact=artifact,
                                 sha256=obj_sha,
                                 private=ds_dict["private"],
                                 override=override,
-                                **s3_kw
                             )
                             if verify_checksum:
-                                click_echo(f"Verified {object_name}", nl)
+                                click_echo(f"Verified {rid} {artifact}", nl)
                             elif verify_existence:
-                                click_echo(f"Checked {object_name}", nl)
+                                click_echo(f"Checked {rid} {artifact}", nl)
                             else:
-                                click_echo(f"Uploaded {object_name}", nl)
+                                click_echo(f"Uploaded {rid} {artifact}", nl)
                             nl = True
                         except FileNotFoundError:
                             click_echo(f"Missing file {local_path}", nl)
