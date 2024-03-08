@@ -216,7 +216,7 @@ def import_figshare(limit):
 
 @click.command()
 def list_all_resources():
-    """List all (public and private) resource ids"""
+    """List all (public and private) resource IDs"""
     datasets = model.Session.query(model.Package)
     for dataset in datasets:
         for resource in dataset.resources:
