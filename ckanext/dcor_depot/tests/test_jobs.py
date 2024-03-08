@@ -20,10 +20,40 @@ from ckan.tests import helpers
 import ckanext.dcor_schemas.plugin
 import dcor_shared
 
-from dcor_shared.testing import make_dataset, synchronous_enqueue_job
+from dcor_shared.testing import (
+    make_dataset, make_dataset_via_s3, synchronous_enqueue_job
+)
 
 
 data_path = pathlib.Path(__file__).parent / "data"
+
+
+@pytest.mark.ckan_config('ckan.plugins', 'dcor_depot dcor_schemas')
+@pytest.mark.usefixtures('clean_db', 'with_request_context')
+@mock.patch('ckan.plugins.toolkit.enqueue_job',
+            side_effect=synchronous_enqueue_job)
+def test_backup_resource_from_s3_to_block_storage(
+        enqueue_job_mock, monkeypatch, ckan_config, tmpdir):
+    monkeypatch.setitem(ckan_config, 'ckan.storage_path', str(tmpdir))
+    monkeypatch.setattr(ckan.lib.uploader,
+                        'get_storage_path',
+                        lambda: str(tmpdir))
+
+    # Create a dataset via the S3 route
+    ds_dict, res_dict = make_dataset_via_s3(
+        resource_path=data_path / "calibration_beads_47.rtdc",
+        activate=True,
+        private=True
+    )
+
+    # After all background jobs are run, the resource should show up
+    # in the local directory tree.
+    backup_loc = pathlib.Path(dcor_shared.get_ckan_config_option(
+        "dcor_object_store.local_backup_location"))
+    rid = res_dict["id"]
+    path_bu = backup_loc / rid[:3] / rid[3:6] / rid[6:]
+    assert dcor_shared.sha256sum(path_bu) == dcor_shared.sha256sum(
+        data_path / "calibration_beads_47.rtdc")
 
 
 @pytest.mark.ckan_config('ckan.plugins', 'dcor_depot dcor_schemas')

@@ -260,6 +260,10 @@ def run_jobs_dcor_depot(modified_days=-1):
                 if jobs.migrate_resource_to_s3_job(resource=res_dict):
                     click_echo(f"Migrated to S3 {resource.name}", nl)
                     nl = True
+                if jobs.backup_resource_from_s3_to_block_storage_job(
+                        resource=res_dict):
+                    click_echo(f"Backed up {resource.name} from S3", nl)
+                    nl = True
             except KeyboardInterrupt:
                 raise
             except BaseException as e:

@@ -20,7 +20,10 @@ This plugin implements:
   via a background job.
   CKAN itself will not notice this. The idea is to have a filesystem overview
   about the datasets of each user.
-- A backround job uploads all resources to S3 `after_resource_create`.
+- A backround job that uploads resources to S3 in `after_resource_create`
+  if the resources were uploaded via the legacy upload route.
+- A background job that backs up resources from S3 to local block storage
+  if the resources were uploaded via the S3 upload route.
 - Import datasets from figshare. Existing datasets from figshare are
   downloaded to the ``/data/depots/figshare`` directory and, upon resource
   creation, symlinked there from  ``/data/ckan-HOSTNAME/resources/RES/OUR/CEID``
