@@ -74,4 +74,3 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
                                    pkg_job_id + "sha256",
                                ]}
                     )
-

@@ -20,9 +20,7 @@ from ckan.tests import helpers
 import ckanext.dcor_schemas.plugin
 import dcor_shared
 
-from dcor_shared.testing import (
-    make_dataset, make_dataset_via_s3, synchronous_enqueue_job
-)
+from dcor_shared.testing import make_dataset, synchronous_enqueue_job
 
 
 data_path = pathlib.Path(__file__).parent / "data"

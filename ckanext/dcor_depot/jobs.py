@@ -1,11 +1,7 @@
-import pathlib
 import warnings
 
 from ckan import logic
-from dcor_shared import (
-    get_ckan_config_option, get_resource_path, s3, s3cc, sha256sum,
-    wait_for_resource
-)
+from dcor_shared import get_resource_path, s3cc, sha256sum, wait_for_resource
 
 from .orgs import MANUAL_DEPOT_ORGS
 from .paths import USER_DEPOT

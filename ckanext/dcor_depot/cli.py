@@ -174,8 +174,9 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                             nl = True
                         else:
                             # Check if the s3 URLs have been set
-                            if ("s3_available" not in res_dict
-                                    or "s3_url" not in res_dict):
+                            if (artifact == "resource"
+                                and ("s3_available" not in res_dict
+                                     or "s3_url" not in res_dict)):
                                 try:
                                     # Update the resource dictionary
                                     logic.get_action("resource_patch")(
@@ -192,13 +193,7 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                                         f"Failed resource {resource.name}", nl)
                                     nl = True
                                     click_echo(tb.format_exc(), nl)
-                                else:
-                                    # Just set these here so in the next
-                                    # iteration (for the condensed file), we
-                                    # don't update the resource dictionary
-                                    # again.
-                                    res_dict["s3_available"] = True
-                                    res_dict["s3_url"] = s3_url
+
             if delete_after_migration:
                 raise NotImplementedError("Deletion not implemented yet!")
 
