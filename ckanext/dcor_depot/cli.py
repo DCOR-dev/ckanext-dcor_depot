@@ -173,6 +173,10 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                             click_echo(f"Missing file {local_path}", nl)
                             nl = True
                         else:
+                            # Only ever delete when upload succeeds
+                            if delete_after_migration:
+                                pathlib.Path(local_path).unlink()
+
                             # Check if the s3 URLs have been set
                             if (artifact == "resource"
                                 and ("s3_available" not in res_dict
@@ -193,9 +197,6 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                                         f"Failed resource {resource.name}", nl)
                                     nl = True
                                     click_echo(tb.format_exc(), nl)
-
-            if delete_after_migration:
-                raise NotImplementedError("Deletion not implemented yet!")
 
     if not nl:
         click.echo("")

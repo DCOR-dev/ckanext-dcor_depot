@@ -1,6 +1,8 @@
 0.14.1
  - fix: not all files were migrated in dcor_migrate_resources_to_object_store
    without the --verify-existence flag
+ - enh: functionalize --delete-after-migration flag for
+   dcor_migrate_resources_to_object_store
  - ref: remove backup from S3 to block storage code
    (we now have backup of S3 data)
 0.14.0
