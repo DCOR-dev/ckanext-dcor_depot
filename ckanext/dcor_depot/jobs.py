@@ -20,48 +20,6 @@ def admin_context():
     return {'ignore_auth': True, 'user': 'default'}
 
 
-def backup_resource_from_s3_to_block_storage_job(resource):
-    """Copy resources from S3 to local block storage
-
-    As long as we do not have a backup strategy for S3, make sure
-    that there is a copy of each resource either in the "resources"
-    directory or in the "dcor_object_store.local_backup_location"
-    directory.
-
-    TODO: remove this method once we have a backup strategy for S3.
-    """
-    rid = resource["id"]
-    # Make sure the resource is available for processing
-    wait_for_resource(rid)
-
-    # Check the legacy local resource
-    path_legacy = get_resource_path(rid)
-    if not path_legacy.exists():
-        # Check the local backup directory
-        backup_loc = get_ckan_config_option(
-            "dcor_object_store.local_backup_location")
-        if backup_loc is not None:
-            # We have this variable defined which means we can back up to it
-            path_bu = pathlib.Path(backup_loc) / rid[:3] / rid[3:6] / rid[6:]
-            if not path_bu.exists():
-                path_bu.parent.mkdir(parents=True, exist_ok=True)
-                # set up a temporary download file path
-                path_tmp = path_bu.with_name(path_bu.name + "_temp")
-                path_tmp.unlink(missing_ok=True)
-                if s3.is_available():
-                    # perform the download from s3
-                    s3_client, _, _ = s3.get_s3()
-                    bucket_name, object_name = \
-                        s3cc.get_s3_bucket_object_for_artifact(rid)
-                    s3_client.download_file(
-                        bucket_name, object_name, str(path_tmp))
-                    # if we got here, then everything went fine
-                    path_tmp.rename(path_bu)
-                    return path_bu
-
-    return False
-
-
 def patch_resource_noauth(package_id, resource_id, data_dict):
     """Patch a resource using package_revise"""
     package_revise = logic.get_action("package_revise")

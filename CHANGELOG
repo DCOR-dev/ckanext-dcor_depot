@@ -1,3 +1,6 @@
+0.14.1
+ - ref: remove backup from S3 to block storage code
+   (we now have backup of S3 data)
 0.14.0
  - BREANKING: remove `depotize` and `internal` submodules and functionalities
  - feat: introduce job for backing up data from S3 to local block storage

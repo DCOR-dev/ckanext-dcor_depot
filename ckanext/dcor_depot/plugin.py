@@ -6,10 +6,7 @@ from rq.job import Job
 from dcor_shared import s3, s3cc
 
 from .cli import get_commands
-from .jobs import (
-    symlink_user_dataset_job, migrate_resource_to_s3_job,
-    backup_resource_from_s3_to_block_storage_job
-)
+from .jobs import symlink_user_dataset_job, migrate_resource_to_s3_job
 
 
 class DCORDepotPlugin(plugins.SingletonPlugin):
@@ -78,21 +75,3 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
                                ]}
                     )
 
-            jid_backup_s3 = pkg_job_id + "backups3"
-            if not Job.exists(jid_backup_s3, connection=ckan_jobs_connect()):
-                toolkit.enqueue_job(
-                    backup_resource_from_s3_to_block_storage_job,
-                    [resource],
-                    title="Backup resource from S3 object store locally",
-                    queue="dcor-normal",
-                    rq_kwargs={"timeout": 3600,
-                               "job_id": jid_backup_s3,
-                               "depends_on": [
-                                   # general requirement
-                                   jid_symlink,
-                                   # requires SHA256 check
-                                   pkg_job_id + "sha256",
-                                   # just for the sake of sanity
-                                   jid_migrate_s3,
-                               ]}
-                    )
