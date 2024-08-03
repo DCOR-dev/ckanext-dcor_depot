@@ -1,3 +1,5 @@
+0.15.0
+ - setup: migrate to pyproject.toml
 0.14.1
  - fix: not all files were migrated in dcor_migrate_resources_to_object_store
    without the --verify-existence flag

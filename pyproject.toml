@@ -1,0 +1,56 @@
+[build-system]
+# Defined by PEP 518:
+requires = [
+    # for version management
+    "setuptools>=46", "setuptools_scm[toml]>=6.2"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ckanext-dcor_depot"
+authors = [
+    # In alphabetical order.
+    {name = "Paul Müller"},
+]
+maintainers = [
+    {name = "Paul Müller", email="dev@craban.de"},
+]
+description = "Manages data storage for DCOR"
+readme = "README.rst"
+requires-python = ">=3.8, <4"
+keywords = ["DC", "DCOR", "deformability", "cytometry"]
+classifiers = [
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Topic :: Scientific/Engineering :: Visualization',
+    'Intended Audience :: Science/Research',
+]
+license = {text = "GNU Affero General Public License v3 or later (AGPLv3+)"}
+dependencies = [
+    "boto3",
+    "ckan>=2.10.4, <3",
+    "click",
+    "dclab>=0.60.9",
+    "dcor_shared>=0.10.0",
+    "h5py",
+    "html2text==2019.8.11",
+    "numpy",
+    "requests",
+]
+dynamic = ["version"]
+
+[project.urls]
+source = "https://github.com/DCOR-dev/ckanext-dcor_depot"
+tracker = "https://github.com/DCOR-dev/ckanext-dcor_depot/issues"
+changelog = "https://github.com/DCOR-dev/ckanext-dcor_depot/blob/main/CHANGELOG"
+
+[project.entry-points."ckan.plugins"]
+dcor_depot = "ckanext.dcor_depot.plugin:DCORDepotPlugin"
+
+[tool.setuptools_scm]
+write_to = "ckanext/dcor_depot/_version.py"
+version_scheme = "post-release"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ckanext.dcor_depot"]
