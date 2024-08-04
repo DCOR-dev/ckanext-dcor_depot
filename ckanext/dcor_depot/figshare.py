@@ -4,9 +4,9 @@ import pathlib
 import pkg_resources
 import tempfile
 
-from ckan import logic
+from ckan import common, logic
 
-from dcor_shared import get_ckan_config_option, s3
+from dcor_shared import s3
 from html2text import html2text
 import requests
 
@@ -109,8 +109,8 @@ def import_dataset(doi):
                 rid = make_id([ds_dict["id"], res["supplied_md5"]])
 
                 # Make sure the resource is on S3
-                bucket_name = get_ckan_config_option(
-                    "dcor_object_store.bucket_name").format(
+                bucket_name = common.config[
+                    "dcor_object_store.bucket_name"].format(
                     organization_id=ds_dict["organization"]["id"])
                 object_name = f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"
                 if s3.object_exists(bucket_name=bucket_name,

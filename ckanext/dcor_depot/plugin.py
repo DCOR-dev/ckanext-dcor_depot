@@ -10,7 +10,7 @@ from .jobs import symlink_user_dataset_job, migrate_resource_to_s3_job
 
 
 class DCORDepotPlugin(plugins.SingletonPlugin):
-    plugins.implements(plugins.IClick)
+    plugins.implements(plugins.IClick, inherit=True)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IResourceController, inherit=True)
 
