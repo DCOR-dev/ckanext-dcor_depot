@@ -26,6 +26,7 @@ def patch_resource_noauth(package_id, resource_id, data_dict):
 
 def migrate_resource_to_s3_job(resource):
     """Migrate a resource to the S3 object store"""
+    performed_upload = False
     rid = resource["id"]
     # Make sure the resource is available for processing
     wait_for_resource(rid)
@@ -40,7 +41,12 @@ def migrate_resource_to_s3_job(resource):
                           f"are running pytest with synchronous jobs!",
                           NoSHA256Available)
             sha256 = sha256sum(path)
-        # Perform the upload
+
+        # Tell whether we have to perform an upload.
+        if not s3cc.object_exists(rid, "resource"):
+            performed_upload = True
+
+        # Perform the upload (if necessary), returning the URL
         s3_url = s3cc.upload_artifact(
             resource_id=rid,
             path_artifact=path,
@@ -50,7 +56,7 @@ def migrate_resource_to_s3_job(resource):
             override=False,
         )
 
-        # Append the S3 URL to the resource metadata
+        # Set the S3 URL in the resource metadata
         patch_resource_noauth(
             package_id=resource["package_id"],
             resource_id=resource["id"],
@@ -58,8 +64,7 @@ def migrate_resource_to_s3_job(resource):
                 "s3_available": True,
                 "s3_url": s3_url})
 
-        return s3_url
-    return False
+    return performed_upload
 
 
 def symlink_user_dataset_job(pkg, usr, resource):
