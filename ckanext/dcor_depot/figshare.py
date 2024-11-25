@@ -177,7 +177,7 @@ def map_figshare_to_dcor(figs):
     dcor["name"] = f"figshare-{figs['id']}-v{figs['version']}"
     dcor["organization"] = {"id": FIGSHARE_ORG}
     # markdownify and remove escapes "\_" with "_" (figshare-7771184-v2)
-    dcor["notes"] = html2text(figs["description"]).replace("\_",  # noqa: W605
-                                                           "_")
+    dcor["notes"] = html2text(figs["description"]).replace(r"\_",
+                                                           r"_")
     dcor["id"] = make_id([dcor["doi"], dcor["name"]])
     return dcor
