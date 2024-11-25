@@ -1,3 +1,5 @@
+0.15.4
+ - fix: make public resources public on S3 only after dataset is "active"
 0.15.3
  - fix: properly indicate whether migrate_resource_to_s3_job actually did it
 0.15.2
