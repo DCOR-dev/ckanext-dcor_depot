@@ -1,10 +1,16 @@
+import logging
 import warnings
 
 from ckan import logic
-from dcor_shared import get_resource_path, s3cc, sha256sum, wait_for_resource
+from dcor_shared import (
+    get_resource_path, rqjob_register, s3, s3cc, sha256sum, wait_for_resource)
+from dcor_shared import RQJob  # noqa: F401
 
 from .orgs import MANUAL_DEPOT_ORGS
 from .paths import USER_DEPOT
+
+
+log = logging.getLogger(__name__)
 
 
 class NoSHA256Available(UserWarning):
@@ -24,8 +30,16 @@ def patch_resource_noauth(package_id, resource_id, data_dict):
     package_revise(context=admin_context(), data_dict=revise_dict)
 
 
-def migrate_resource_to_s3_job(resource):
+@rqjob_register(ckanext="dcor_depot",
+                queue="dcor-normal",
+                timeout=3600,
+                )
+def job_migrate_resource_to_s3(resource):
     """Migrate a resource to the S3 object store"""
+    if not s3.is_available():
+        log.info("S3 not available, not migrating resource")
+        return False
+
     performed_upload = False
     rid = resource["id"]
     # Make sure the resource is available for processing
@@ -67,8 +81,11 @@ def migrate_resource_to_s3_job(resource):
     return performed_upload
 
 
-def symlink_user_dataset_job(pkg, usr, resource):
+# TODO: Remove this method and make sure nothing depends on it.
+def job_symlink_user_dataset(pkg, usr, resource):
     """Symlink resource data to human-readable depot"""
+    warnings.warn("job_symlink_user_dataset should not be used",
+                  DeprecationWarning)
     path = get_resource_path(resource["id"])
     if not path.exists():
         # nothing to do (skip, because resource is on S3 only)

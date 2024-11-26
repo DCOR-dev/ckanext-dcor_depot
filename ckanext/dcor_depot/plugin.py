@@ -6,7 +6,7 @@ from rq.job import Job
 from dcor_shared import s3, s3cc
 
 from .cli import get_commands
-from .jobs import symlink_user_dataset_job, migrate_resource_to_s3_job
+from . import jobs
 
 
 class DCORDepotPlugin(plugins.SingletonPlugin):
@@ -39,6 +39,11 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
 
     # IResourceController
     def after_resource_create(self, context, resource):
+        if not context.get("is_background_job") and s3.is_available():
+            # All jobs are defined via decorators in jobs.py
+            jobs.RQJob.enqueue_all_jobs(resource, ckanext="dcor_depot")
+
+        # TODO: Remove this and make sure everything still works.
         # Symlinking new dataset
         # check organization
         pkg_id = resource["package_id"]
@@ -50,29 +55,9 @@ class DCORDepotPlugin(plugins.SingletonPlugin):
         pkg_job_id = f"{resource['package_id']}_{resource['position']}_"
         jid_symlink = pkg_job_id + "symlink"
         if not Job.exists(jid_symlink, connection=ckan_jobs_connect()):
-            toolkit.enqueue_job(symlink_user_dataset_job,
+            toolkit.enqueue_job(jobs.job_symlink_user_dataset,
                                 [pkg, usr, resource],
                                 title="Move and symlink user dataset",
                                 queue="dcor-short",
                                 rq_kwargs={"timeout": 60,
                                            "job_id": jid_symlink})
-
-        # Migrating data to S3
-        # This job should only be run if the S3 access is available
-        if s3.is_available():
-            jid_migrate_s3 = pkg_job_id + "migrates3"
-            if not Job.exists(jid_migrate_s3, connection=ckan_jobs_connect()):
-                toolkit.enqueue_job(
-                    migrate_resource_to_s3_job,
-                    [resource],
-                    title="Migrate resource to S3 object store",
-                    queue="dcor-normal",
-                    rq_kwargs={"timeout": 3600,
-                               "job_id": jid_migrate_s3,
-                               "depends_on": [
-                                   # general requirement
-                                   jid_symlink,
-                                   # requires SHA256 check
-                                   pkg_job_id + "sha256",
-                               ]}
-                    )

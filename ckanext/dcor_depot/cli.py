@@ -219,6 +219,7 @@ def list_all_resources():
             click.echo(resource.id)
 
 
+# TODO: Remove this method (it should not be used in current workflows)
 @click.command()
 @click.option('--modified-days', default=-1,
               help='Only run for datasets modified within this number of days '

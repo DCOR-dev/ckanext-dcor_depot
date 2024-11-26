@@ -1,3 +1,6 @@
+0.16.0
+ - ref: partially migrate to dcor_schemas.RQJob
+ - ref: deprecate resource symlinking
 0.15.4
  - fix: make public resources public on S3 only after dataset is "active"
 0.15.3
