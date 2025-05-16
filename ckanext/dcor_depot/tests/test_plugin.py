@@ -53,24 +53,7 @@ def test_after_dataset_update_make_private_public_on_s3(
     # make sure the dataset is private
     assert ds_dict["private"]
 
-    # upload the resource to S3
     rid = res_dict["id"]
-    bucket_name = get_ckan_config_option(
-        "dcor_object_store.bucket_name").format(
-        organization_id=ds_dict["organization"]["id"])
-    # Upload the resource to S3
-    s3_url = s3.upload_file(
-        bucket_name=bucket_name,
-        object_name=f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}",
-        path=str(get_resource_path(rid)),
-        sha256=res_dict.get("sha256"),
-        private=ds_dict["private"])
-    # Update the resource dictionary
-    ckan.logic.get_action("resource_patch")(
-        context=create_context,
-        data_dict={"id": rid,
-                   "s3_available": True,
-                   "s3_url": s3_url})
 
     # make sure this worked
     res_dict = ckan.logic.get_action("resource_show")(
