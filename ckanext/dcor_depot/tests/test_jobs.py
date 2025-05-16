@@ -26,6 +26,7 @@ from dcor_shared.testing import make_dataset, synchronous_enqueue_job
 data_path = pathlib.Path(__file__).parent / "data"
 
 
+@pytest.mark.skip(reason="This functionality is not required anymore")
 @pytest.mark.ckan_config('ckan.plugins', 'dcor_depot dcor_schemas')
 @pytest.mark.usefixtures('clean_db', 'with_request_context')
 @mock.patch('ckan.plugins.toolkit.enqueue_job',
@@ -71,6 +72,7 @@ def test_migrate_to_s3_public_dataset(enqueue_job_mock, create_with_upload,
         data_path / "calibration_beads_47.rtdc")
 
 
+@pytest.mark.skip(reason="This functionality is not required anymore")
 @pytest.mark.ckan_config('ckan.plugins', 'dcor_depot dcor_schemas')
 @pytest.mark.usefixtures('clean_db', 'with_request_context')
 @mock.patch('ckan.plugins.toolkit.enqueue_job',
@@ -112,6 +114,7 @@ def test_migrate_to_s3_private_dataset(enqueue_job_mock, create_with_upload,
     assert response.status_code == 403, "resource is private"
 
 
+@pytest.mark.skip(reason="This functionality is not required anymore")
 # dcor_depot must come first, because jobs are run in sequence and the
 # symlink_user_dataset jobs must be executed first so that dcor_schemas
 # does not complain about resources not available in wait_for_resource.

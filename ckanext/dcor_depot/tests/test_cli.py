@@ -21,6 +21,7 @@ from dcor_shared.testing import create_with_upload_no_temp  # noqa: F401
 data_path = pathlib.Path(__file__).parent / "data"
 
 
+@pytest.mark.skip(reason="This functionality is not required anymore")
 # Deactivate the dcor_depot plugin, so that the automatic upload to S3
 # is not performed.
 @pytest.mark.ckan_config('ckan.plugins', 'dcor_schemas')
@@ -92,6 +93,7 @@ def test_cli_migrate_to_object_store(enqueue_job_mock,
     assert dcor_shared.sha256sum(dl_path) == resource["sha256"]
 
 
+@pytest.mark.skip(reason="This functionality is not required anymore")
 # Deactivate the dcor_depot plugin, so that the automatic upload to S3
 # is not performed.
 @pytest.mark.ckan_config('ckan.plugins', 'dcor_schemas')
@@ -184,6 +186,7 @@ def test_cli_migrate_to_object_store_with_verify_existence(
     assert dcor_shared.sha256sum(dl_path) == resource["sha256"]
 
 
+@pytest.mark.skip(reason="This functionality is not required anymore")
 # Deactivate the dcor_depot plugin, so that the automatic upload to S3
 # is not performed.
 @pytest.mark.ckan_config('ckan.plugins', 'dcor_schemas')

@@ -9,11 +9,9 @@ import ckan.model
 import ckan.common
 import ckan.logic
 
-import ckanext.dcor_schemas.plugin
-
 from dcor_shared import get_ckan_config_option, get_resource_path, s3
 
-from dcor_shared.testing import make_dataset, synchronous_enqueue_job
+from dcor_shared.testing import make_dataset_via_s3, synchronous_enqueue_job
 from dcor_shared.testing import create_with_upload_no_temp  # noqa: F401
 
 
@@ -31,20 +29,9 @@ data_path = pathlib.Path(__file__).parent / "data"
             side_effect=synchronous_enqueue_job)
 def test_after_dataset_update_make_private_public_on_s3(
         enqueue_job_mock,
-        create_with_upload_no_temp,  # noqa: F811
-        monkeypatch,
         tmp_path):
-    monkeypatch.setattr(
-        ckanext.dcor_schemas.plugin,
-        'DISABLE_AFTER_DATASET_CREATE_FOR_CONCURRENT_JOB_TESTS',
-        True)
-    pass
-
     user = factories.User()
     user_obj = ckan.model.User.by_name(user["name"])
-    monkeypatch.setattr(ckan.common,
-                        'current_user',
-                        user_obj)
     owner_org = factories.Organization(users=[{
         'name': user['id'],
         'capacity': 'admin'
@@ -55,10 +42,10 @@ def test_after_dataset_update_make_private_public_on_s3(
                       'user': user['name'],
                       'api_version': 3}
     # Create a private dataset
-    ds_dict, res_dict = make_dataset(
-        create_context, owner_org,
+    ds_dict, res_dict = make_dataset_via_s3(
+        create_context=create_context,
+        owner_org=owner_org,
         activate=True,
-        create_with_upload=create_with_upload_no_temp,
         resource_path=data_path / "calibration_beads_47.rtdc",
         private=True,
     )
