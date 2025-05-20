@@ -9,8 +9,6 @@ import ckan.model
 import ckan.common
 import ckan.logic
 
-from dcor_shared import get_ckan_config_option, get_resource_path, s3
-
 from dcor_shared.testing import make_dataset_via_s3, synchronous_enqueue_job
 from dcor_shared.testing import create_with_upload_no_temp  # noqa: F401
 
