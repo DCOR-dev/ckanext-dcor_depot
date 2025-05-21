@@ -8,8 +8,6 @@ import ckan.tests.factories as factories
 from ckan.tests import helpers
 import ckan.model
 import ckan.common
-import ckanext.dcor_schemas.plugin
-import ckanext.dcor_depot.jobs
 
 import dcor_shared
 import requests
@@ -35,10 +33,6 @@ def test_cli_migrate_to_object_store(enqueue_job_mock,
                                      monkeypatch,
                                      cli,
                                      tmp_path):
-    monkeypatch.setattr(
-        ckanext.dcor_schemas.plugin,
-        'DISABLE_AFTER_DATASET_CREATE_FOR_CONCURRENT_JOB_TESTS',
-        True)
 
     user = factories.User()
     user_obj = ckan.model.User.by_name(user["name"])
@@ -108,10 +102,6 @@ def test_cli_migrate_to_object_store_with_verify_existence(
         monkeypatch,
         cli,
         tmp_path):
-    monkeypatch.setattr(
-        ckanext.dcor_schemas.plugin,
-        'DISABLE_AFTER_DATASET_CREATE_FOR_CONCURRENT_JOB_TESTS',
-        True)
 
     user = factories.User()
     user_obj = ckan.model.User.by_name(user["name"])
@@ -201,10 +191,6 @@ def test_cli_migrate_to_object_store_with_verify_checksum(
         monkeypatch,
         cli,
         tmp_path):
-    monkeypatch.setattr(
-        ckanext.dcor_schemas.plugin,
-        'DISABLE_AFTER_DATASET_CREATE_FOR_CONCURRENT_JOB_TESTS',
-        True)
 
     user = factories.User()
     user_obj = ckan.model.User.by_name(user["name"])

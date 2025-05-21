@@ -3,7 +3,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from rq.job import Job
 
-from dcor_shared import s3, s3cc
+from dcor_shared import s3
 
 from .cli import get_commands
 from . import jobs
