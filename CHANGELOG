@@ -1,5 +1,6 @@
 0.17.0
  - BREAKING: remove symlinking resources to user depot functionality
+ - BREAKING: remove `paths` submodule
  - ref: migrate s3 public tagging of resources to dcor_schemas
  - tests: remove unused `DISABLE_AFTER_DATASET_CREATE_FOR_CONCURRENT_JOB_TESTS`
 0.16.1
