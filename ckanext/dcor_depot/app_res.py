@@ -1,4 +1,4 @@
-import warnings
+import pathlib
 
 from ckan import logic
 from dcor_shared import get_ckan_config_option, s3, sha256sum
@@ -46,12 +46,8 @@ def append_ckan_resource_to_active_dataset(dataset_id, res_dict):
         )
 
 
-def append_resource(path, dataset_id, copy=None):
-    """Append a resource to a dataset, copying it to the correct path"""
-    if copy is not None:
-        warnings.warn("The `copy` argument is deprecated since we moved to S3",
-                      DeprecationWarning)
-
+def append_resource(path, dataset_id, delete_source=False):
+    """Upload a resource to S3 and append to an existing dataset"""
     package_show = logic.get_action("package_show")
     ds_dict = package_show(context=admin_context(),
                            data_dict={"id": dataset_id})
@@ -82,3 +78,8 @@ def append_resource(path, dataset_id, copy=None):
                                                      "s3_available": True,
                                                      "s3_url": s3_url,
                                                      })
+
+    # If we got here without any exceptions, then it is safe to
+    # delete the input path.
+    if delete_source:
+        pathlib.Path(path).unlink()

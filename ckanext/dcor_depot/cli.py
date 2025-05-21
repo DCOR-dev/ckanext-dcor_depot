@@ -40,7 +40,7 @@ def append_resource(path, dataset_id, delete_source=False):
     path = pathlib.Path(path)
     app_res.append_resource(path=path,
                             dataset_id=dataset_id,
-                            copy=not delete_source)
+                            delete_source=delete_source)
 
 
 @click.command()
