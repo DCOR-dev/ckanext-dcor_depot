@@ -4,9 +4,6 @@ import warnings
 
 from dcor_shared import sha256sum
 
-#: Content of the dummy file created when importing data.
-DUMMY_BYTES = b"[Data import pending]"
-
 
 def check_md5(path, md5sum, block_size=2**20):
     """Check the MD5 sum of a file"""
