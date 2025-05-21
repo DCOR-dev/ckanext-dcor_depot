@@ -5,6 +5,7 @@
  - fix: use temporary directory `ckanext.dcor_depot.tmp_dir`
  - fix: correctly implement optional resource deletion after S3 upload
  - ref: migrate s3 public tagging of resources to dcor_schemas
+ - ref: add deprecated `get_resource_path` from dcor_shared
  - tests: remove unused `DISABLE_AFTER_DATASET_CREATE_FOR_CONCURRENT_JOB_TESTS`
 0.16.1
  - ci: update GitHub Actions workflow to use Docker for testing

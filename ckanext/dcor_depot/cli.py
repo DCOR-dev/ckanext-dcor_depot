@@ -8,7 +8,7 @@ import ckan.model as model
 import click
 
 from dcor_shared import (
-    DC_MIME_TYPES, s3, s3cc, get_resource_info, get_resource_path, sha256sum
+    DC_MIME_TYPES, s3, s3cc, get_resource_info, sha256sum
 )
 
 from . import app_res
@@ -132,7 +132,7 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
             rid = resource.id
             ds_dict, res_dict = get_resource_info(rid)
             rid = res_dict["id"]
-            res_loc = str(get_resource_path(rid))
+            res_loc = str(jobs.get_resource_path(rid))
             for artifact, suffix, obj_sha in [
                 ("resource", "", res_dict.get("sha256")),
                 ("preview", "_preview.jpg", None),
