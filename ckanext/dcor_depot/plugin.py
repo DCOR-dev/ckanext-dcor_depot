@@ -11,31 +11,11 @@ from . import jobs
 
 class DCORDepotPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IClick, inherit=True)
-    plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IResourceController, inherit=True)
 
     # IClick
     def get_commands(self):
         return get_commands()
-
-    # IPackageController
-    def after_dataset_update(self, context, data_dict):
-        # This method is called *after* the dataset has been updated.
-        private = data_dict.get("private")
-        if (private is not None and not private
-                # Only do this for "active" datasets, otherwise this will
-                # be run after *every* resource update (package_revise).
-                and data_dict["state"] == "active"):
-            # Normally, we would only get here if the user specified the
-            # "private" key in `data_dict`. Thus, it is not an overhead
-            # for normal operations.
-            # We now have a public dataset. And it could be that this
-            # dataset has been private before. If we already have resources
-            # in this dataset, then we have to set the S3 object tag
-            # "public:true", so everyone can access it.
-            # Make sure the S3 resources get the "public:true" tag.
-            for res in data_dict["resources"]:
-                s3cc.make_resource_public(res["id"])
 
     # IResourceController
     def after_resource_create(self, context, resource):
