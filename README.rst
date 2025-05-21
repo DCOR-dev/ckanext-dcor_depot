@@ -15,12 +15,12 @@ files in DCOR:
 This plugin implements:
 
 - A backround job that uploads resources to S3 in `after_resource_create`
-  if the resources were uploaded via the legacy upload route.
-- Import datasets from figshare. Existing datasets from figshare are
-  downloaded to the ``/data/depots/figshare`` directory and, upon resource
-  creation, symlinked there from  ``/data/ckan-HOSTNAME/resources/RES/OUR/CEID``
-  (Note that this is an exemption of the data storage management described
-  above). When running the following command, the "figshare-import" organization
+  if the resources were previously uploaded via the legacy upload route.
+  This functionality is interesting for legacy setups that are not using
+  S3 object storage by default.
+- Import datasets from figshare. Existing datasets on figshare are
+  parsed, datasets are created and resources uploaded to S3 object storage.
+  When running the following command, the "figshare-import" organization
   is created and the datasets listed in ``figshare_dois.txt`` are added to CKAN:
 
   ::
@@ -41,12 +41,7 @@ This plugin implements:
 
      ckan append-resource /path/to/file dataset_id --delete-source
 
-Please make sure that the necessary file permissions are given in ``/data``.
 
-In 2023, it was decided that the huge block storage of DCOR
-should be replaced with an S3-compatible object store, because block storage
-does not scale well. This partially deprecates some of the commands above
-which might be removed or modified to support object storage directly.
 
 - CLI for migrating data from block storage to an S3-compatible object storage
   service. For this, the following configuration keys must be specified in
@@ -62,7 +57,19 @@ which might be removed or modified to support object storage directly.
 
   Usage::
 
-    ckan dcor-migrate-resources-to-object-store
+    ckan dcor-migrate-resources-to-object-store --modified-days 2 --delete-after-migration --verify-checksum
+
+- CLI for listing all S3 objects for a dataset::
+
+    ckan dcor-list-s3-objects-for-dataset c7a98a04-4e0a-98a7-fb0b-eca379d1f219
+
+- CLI for importing figshare data to DCOR::
+
+    ckan import-figshare --limit 2
+
+- CLI for listing all resources::
+
+    ckan list-all-resources
 
 
 Installation
@@ -79,7 +86,6 @@ Add this extension to the plugins and default_views in ckan.ini:
 
     ckan.plugins = [...] dcor_depot
     ckan.storage_path=/data/ckan-HOSTNAME
-    ckanext.dcor_depot.depots_path=/data/depots
     ckanext.dcor_depot.users_depot_name=users-HOSTNAME
 
 This plugin stores resources to `/data`:
