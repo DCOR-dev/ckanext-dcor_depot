@@ -56,6 +56,8 @@ def download_file(url, path, ret_sha256=False):
                     hasher.update(chunk)
     if ret_sha256:
         return hasher.hexdigest()
+    else:
+        return None
 
 
 def figshare(limit=0):
@@ -102,46 +104,60 @@ def import_dataset(doi):
     else:
         print(f"Skipping creation of {ds_dict['name']} (exists)")
 
+    # Operate in a cache location
+    cache_loc = common.config.get("ckanext.dcor_depot.tmp_dir")
+    if not cache_loc:
+        cache_loc = None
+    else:
+        # Make sure the directory exists and don't panic when we cannot
+        # create it.
+        try:
+            pathlib.Path(cache_loc).mkdir(parents=True, exist_ok=True)
+        except BaseException:
+            cache_loc = None
+
+    if cache_loc is None:
+        cache_loc = tempfile.mkdtemp(prefix="ckanext-dcor_depot_")
+
     # Download/Import the resources
-    with tempfile.TemporaryDirectory() as dldir:
-        for res in figshare_dict["files"]:
-            if not res["is_link_only"]:
-                rid = make_id([ds_dict["id"], res["supplied_md5"]])
+    for res in figshare_dict["files"]:
+        if not res["is_link_only"]:
+            rid = make_id([ds_dict["id"], res["supplied_md5"]])
 
-                # Make sure the resource is on S3
-                bucket_name = common.config[
-                    "dcor_object_store.bucket_name"].format(
-                    organization_id=ds_dict["organization"]["id"])
-                object_name = f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"
-                if s3.object_exists(bucket_name=bucket_name,
-                                    object_name=object_name):
-                    print(f"Resource {res['name']} already on S3")
-                else:
-                    # download to and/or verify on disk
-                    print(f"Downloading {res['name']}...")
-                    dlpath = pathlib.Path(dldir) / res["name"]
-                    sha256 = download_file(res["download_url"], dlpath,
-                                           ret_sha256=True)
-                    check_md5(dlpath, res["supplied_md5"])
+            # Make sure the resource is on S3
+            bucket_name = common.config[
+                "dcor_object_store.bucket_name"].format(
+                organization_id=ds_dict["organization"]["id"])
+            object_name = f"resource/{rid[:3]}/{rid[3:6]}/{rid[6:]}"
+            if s3.object_exists(bucket_name=bucket_name,
+                                object_name=object_name):
+                print(f"Resource {res['name']} already on S3")
+            else:
+                # download to and/or verify on disk
+                print(f"Downloading {res['name']}...")
+                dlpath = pathlib.Path(cache_loc) / res["name"]
+                sha256 = download_file(res["download_url"], dlpath,
+                                       ret_sha256=True)
+                check_md5(dlpath, res["supplied_md5"])
 
-                    # upload the resource to S3
-                    print(f"Uploading to S3 {res['name']}...")
-                    s3.upload_file(
-                        bucket_name=bucket_name,
-                        object_name=object_name,
-                        path=dlpath,
-                        sha256=sha256,
-                        private=ds_dict["private"],
-                    )
-
-                # Make sure the resource is in the CKAN database
-                append_ckan_resource_to_active_dataset(
-                    dataset_id=ds_dict["id"],
-                    res_dict={"id": rid,
-                              "name": res["name"],
-                              "s3_available": True,
-                              }
+                # upload the resource to S3
+                print(f"Uploading to S3 {res['name']}...")
+                s3.upload_file(
+                    bucket_name=bucket_name,
+                    object_name=object_name,
+                    path=dlpath,
+                    sha256=sha256,
+                    private=ds_dict["private"],
                 )
+
+            # Make sure the resource is in the CKAN database
+            append_ckan_resource_to_active_dataset(
+                dataset_id=ds_dict["id"],
+                res_dict={"id": rid,
+                          "name": res["name"],
+                          "s3_available": True,
+                          }
+            )
 
     # activate the dataset
     package_patch = logic.get_action("package_patch")
