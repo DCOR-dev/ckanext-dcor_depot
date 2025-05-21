@@ -1,6 +1,7 @@
 0.17.0
  - BREAKING: remove symlinking resources to user depot functionality
  - BREAKING: remove `paths` submodule
+ - BREAKING: remove `orgs` submodule
  - fix: use temporary directory `ckanext.dcor_depot.tmp_dir`
  - fix: correctly implement optional resource deletion after S3 upload
  - ref: migrate s3 public tagging of resources to dcor_schemas
