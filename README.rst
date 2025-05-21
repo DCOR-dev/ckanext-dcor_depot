@@ -14,12 +14,6 @@ files in DCOR:
 
 This plugin implements:
 
-- Data storage management. All resources uploaded by a user are moved
-  to ``/data/depots/users-HOSTNAME/USERNAME-ORGNAME/PK/ID/PKGNAME_RESID_RESNAME``
-  and symlinks are created in ``/data/ckan-HOSTNAME/resources/RES/OUR/CEID``
-  via a background job.
-  CKAN itself will not notice this. The idea is to have a filesystem overview
-  about the datasets of each user.
 - A backround job that uploads resources to S3 in `after_resource_create`
   if the resources were uploaded via the legacy upload route.
 - Import datasets from figshare. Existing datasets from figshare are
@@ -34,7 +28,7 @@ This plugin implements:
      ckan import-figshare
 
 
-- CLI for symlinking datasets that have failed to symlink before:
+- CLI for running all background jobs (migration to S3):
 
   ::
 

@@ -6,9 +6,6 @@ from dcor_shared import (
     get_resource_path, rqjob_register, s3, s3cc, sha256sum, wait_for_resource)
 from dcor_shared import RQJob  # noqa: F401
 
-from .orgs import MANUAL_DEPOT_ORGS
-from .paths import USER_DEPOT
-
 
 log = logging.getLogger(__name__)
 
@@ -79,52 +76,3 @@ def job_migrate_resource_to_s3(resource):
                 "s3_url": s3_url})
 
     return performed_upload
-
-
-# TODO: Remove this method and make sure nothing depends on it.
-def job_symlink_user_dataset(pkg, usr, resource):
-    """Symlink resource data to human-readable depot"""
-    warnings.warn("job_symlink_user_dataset should not be used",
-                  DeprecationWarning)
-    path = get_resource_path(resource["id"])
-    if not path.exists():
-        # nothing to do (skip, because resource is on S3 only)
-        return False
-
-    org = pkg["organization"]["name"]
-    if org in MANUAL_DEPOT_ORGS or path.is_symlink():
-        # nothing to do (skip, because already symlinked)
-        return False
-
-    user = usr["name"]
-    # depot path
-    depot_path = (USER_DEPOT
-                  / (user + "-" + org)
-                  / pkg["id"][:2]
-                  / pkg["id"][2:4]
-                  / f"{pkg['name']}_{resource['id']}_{resource['name']}")
-
-    depot_path.parent.mkdir(exist_ok=True, parents=True)
-
-    symlinked = True
-
-    # move file to depot and create symlink back
-    try:
-        path.rename(depot_path)
-    except FileNotFoundError:
-        # somebody else was faster (avoid race conditions)
-        if not depot_path.exists():
-            raise
-        else:
-            symlinked = False
-
-    try:
-        path.symlink_to(depot_path)
-    except FileNotFoundError:
-        # somebody else was faster (avoid race conditions)
-        if not path.is_symlink():
-            raise
-        else:
-            symlinked = False
-
-    return symlinked

@@ -242,19 +242,13 @@ def run_jobs_dcor_depot(modified_days=-1):
     for dataset in datasets:
         nl = False
         click.echo(f"Checking dataset {dataset.id}\r", nl=False)
-        usr_id = dataset.creator_user_id
         ds_dict = dataset.as_dict()
         ds_dict["organization"] = logic.get_action("organization_show")(
                 {'ignore_auth': True}, {"id": dataset.owner_org})
         for resource in dataset.resources:
             res_dict = resource.as_dict()
             try:
-                if jobs.symlink_user_dataset_job(pkg=ds_dict,
-                                                 usr={"name": usr_id},
-                                                 resource=res_dict):
-                    click_echo(f"Created symlink for {resource.name}", nl)
-                    nl = True
-                if jobs.migrate_resource_to_s3_job(resource=res_dict):
+                if jobs.job_migrate_resource_to_s3(resource=res_dict):
                     click_echo(f"Migrated to S3 {resource.name}", nl)
                     nl = True
             except KeyboardInterrupt:
