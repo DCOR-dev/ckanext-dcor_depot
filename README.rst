@@ -14,7 +14,7 @@ files in DCOR:
 
 This plugin implements:
 
-- A backround job that uploads resources to S3 in `after_resource_create`
+- A background job that uploads resources to S3 in `after_resource_create`
   if the resources were previously uploaded via the legacy upload route.
   This functionality is interesting for legacy setups that are not using
   S3 object storage by default.
