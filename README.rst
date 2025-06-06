@@ -25,7 +25,7 @@ This plugin implements:
 
   ::
 
-     ckan import-figshare
+     ckan dcor-import-figshare
 
 
 - CLI for running all background jobs (migration to S3):

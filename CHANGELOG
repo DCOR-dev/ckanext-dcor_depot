@@ -1,4 +1,5 @@
-0.17.1
+0.18.0
+ - BREAKING: rename CLI `import-figshare` to `dcor-import-figshare`
  - enh: also remove depot files when migrating resources to S3
 0.17.0
  - integration with DCOR version bump for CKAN 2.11.3

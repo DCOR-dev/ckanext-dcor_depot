@@ -208,7 +208,7 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
 
 @click.command()
 @click.option('--limit', default=0, help='Limit number of datasets imported')
-def import_figshare(limit):
+def dcor_import_figshare(limit):
     """Import a predefined list of datasets from figshare"""
     figshare(limit=limit)
 
@@ -269,7 +269,7 @@ def get_commands():
     return [append_resource,
             dcor_list_s3_objects_for_dataset,
             dcor_migrate_resources_to_object_store,
-            import_figshare,
+            dcor_import_figshare,
             list_all_resources,
             run_jobs_dcor_depot,
             ]
