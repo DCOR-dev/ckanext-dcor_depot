@@ -25,7 +25,7 @@ This plugin implements:
 
   ::
 
-     ckan dcor-import-figshare
+     ckan dcor-import-figshare --limit 2
 
 
 - CLI for running all background jobs (migration to S3):
@@ -62,10 +62,6 @@ This plugin implements:
 - CLI for listing all S3 objects for a dataset::
 
     ckan dcor-list-s3-objects-for-dataset c7a98a04-4e0a-98a7-fb0b-eca379d1f219
-
-- CLI for importing figshare data to DCOR::
-
-    ckan import-figshare --limit 2
 
 - CLI for listing all resources::
 
