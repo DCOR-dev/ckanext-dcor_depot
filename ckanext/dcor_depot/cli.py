@@ -213,6 +213,41 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
     click.echo("Done!")
 
 
+@click.option('--initiated-before-days', default=5,
+              help='Only prune multipart uploads that were initiated '
+                   + 'before a given number of days (set to -1 to prune all)')
+@click.option('--dry-run', flag=True,
+              help='Do not prune, only print what would happen')
+@click.command()
+def dcor_prune_stale_multipart_uploads(initiated_before_days=5, dry_run=False):
+    """Prune stale multipart uploads
+
+    When users upload data to DCOR and the upload is aborted unexpectedly,
+    then stale multipart uploads might still be around. These multipart
+    uploads normally count against the storage quota and can incur costs.
+    Pruning them is a sensible task that should be done regularly.
+    """
+    prune_info = s3.prune_multipart_uploads(
+        initiated_before_days=initiated_before_days,
+        dry_run=dry_run,
+        print_progress=True,
+    )
+    # assemble and print stats
+    num_buckets = 0
+    num_found = 0
+    num_ignored = 0
+    for bucket_name in prune_info.keys():
+        bd = prune_info[bucket_name]
+        num_found += bd["found"]
+        num_ignored += bd["ignored"]
+        if bd["found"] and bd["ignored"]:
+            num_buckets += 1
+    click.echo(f"Affected buckets: {num_buckets}")
+    click.echo(f"Stale uploads found: {num_found}")
+    click.echo(f"Ignored recent uploads: {num_ignored}")
+    click.echo("Done!")
+
+
 @click.command()
 def list_all_resources():
     """List all (public and private) resource IDs"""

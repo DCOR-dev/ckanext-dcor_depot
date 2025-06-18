@@ -67,6 +67,10 @@ This plugin implements:
 
     ckan list-all-resources
 
+- CLI for pruning stale multipart uploads::
+
+    ckan dcor-prune-stale-multipart-uploads --initiated-before-days 5 --dry-run
+
 
 Installation
 ------------
