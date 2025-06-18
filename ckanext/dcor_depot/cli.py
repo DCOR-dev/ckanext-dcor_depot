@@ -44,6 +44,13 @@ def append_resource(path, dataset_id, delete_source=False):
 
 
 @click.command()
+@click.option('--limit', default=0, help='Limit number of datasets imported')
+def dcor_import_figshare(limit):
+    """Import a predefined list of datasets from figshare"""
+    figshare(limit=limit)
+
+
+@click.command()
 @click.argument('dataset_id')
 def dcor_list_s3_objects_for_dataset(dataset_id):
     """List S3 resource and other data locations for a dataset
@@ -204,13 +211,6 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
     if not nl:
         click.echo("")
     click.echo("Done!")
-
-
-@click.command()
-@click.option('--limit', default=0, help='Limit number of datasets imported')
-def dcor_import_figshare(limit):
-    """Import a predefined list of datasets from figshare"""
-    figshare(limit=limit)
 
 
 @click.command()
