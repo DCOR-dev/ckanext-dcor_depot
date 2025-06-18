@@ -31,7 +31,7 @@ dependencies = [
     "ckan>=2.10.4, <3",
     "click",
     "dclab>=0.60.9",
-    "dcor_shared>=0.10.0",
+    "dcor_shared>=0.14.0",
     "h5py",
     "html2text==2019.8.11",
     "numpy",
