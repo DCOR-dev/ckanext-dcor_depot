@@ -216,7 +216,7 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
 @click.option('--initiated-before-days', default=5,
               help='Only prune multipart uploads that were initiated '
                    + 'before a given number of days (set to -1 to prune all)')
-@click.option('--dry-run', flag=True,
+@click.option('--dry-run', is_flag=True,
               help='Do not prune, only print what would happen')
 @click.command()
 def dcor_prune_stale_multipart_uploads(initiated_before_days=5, dry_run=False):
