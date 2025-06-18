@@ -302,9 +302,10 @@ def run_jobs_dcor_depot(modified_days=-1):
 
 def get_commands():
     return [append_resource,
+            dcor_import_figshare,
             dcor_list_s3_objects_for_dataset,
             dcor_migrate_resources_to_object_store,
-            dcor_import_figshare,
+            dcor_prune_stale_multipart_uploads,
             list_all_resources,
             run_jobs_dcor_depot,
             ]
