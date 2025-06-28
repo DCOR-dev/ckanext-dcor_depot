@@ -31,7 +31,7 @@ def append_resource(path, dataset_id, delete_source=False):
     """Append a resource to a dataset
 
     This can be done even after the dataset is made active.
-    It can be used to e.g. append post-processed RT-DC data to an
+    It can be used to e.g. append post-processed DC data to an
     existing dataset.
 
     Pass the path `path` to a resource, and it will be added to the
