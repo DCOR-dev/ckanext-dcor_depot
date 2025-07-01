@@ -1,8 +1,5 @@
 import hashlib
 import pathlib
-import warnings
-
-from dcor_shared import sha256sum
 
 
 def check_md5(path, md5sum, block_size=2**20):
