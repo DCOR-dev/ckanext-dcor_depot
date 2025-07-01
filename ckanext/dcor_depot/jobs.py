@@ -82,7 +82,7 @@ def job_migrate_resource_to_s3(resource):
             sha256 = sha256sum(path)
 
         # Tell whether we have to perform an upload.
-        if not s3cc.object_exists(rid, "resource"):
+        if not s3cc.artifact_exists(rid, "resource"):
             performed_upload = True
 
         # Perform the upload (if necessary), returning the URL
