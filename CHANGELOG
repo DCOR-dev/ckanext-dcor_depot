@@ -1,4 +1,5 @@
-0.19.1
+1.0.0
+ - declare first stable release
  - ref: remove deprecated `sha_256`
 0.19.0
  - feat: new CLI command `dcor-prune-stale-multipart-uploads`
