@@ -47,10 +47,3 @@ def obj2str(obj):
     else:
         raise ValueError("No rule to convert object '{}' to string.".
                          format(obj.__class__))
-
-
-def sha_256(path, block_size=2**20):
-    warnings.warn(
-        "sha_256 is deprecated, please use dcor_shared.sha256sum instead",
-        DeprecationWarning)
-    return sha256sum(path)
