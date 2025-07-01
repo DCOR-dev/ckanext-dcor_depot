@@ -12,7 +12,7 @@ import ckan.common
 import dcor_shared
 import requests
 
-from dcor_shared.testing import make_dataset, synchronous_enqueue_job
+from dcor_shared.testing import synchronous_enqueue_job
 from dcor_shared.testing import create_with_upload_no_temp  # noqa: F401
 
 
@@ -48,6 +48,7 @@ def test_cli_migrate_to_object_store(enqueue_job_mock,
                       'auth_user_obj': user_obj,
                       'user': user['name'],
                       'api_version': 3}
+    from dcor_shared.testing import make_dataset
     dataset = make_dataset(create_context,
                            owner_org,
                            activate=False)
@@ -117,6 +118,7 @@ def test_cli_migrate_to_object_store_with_verify_existence(
                       'auth_user_obj': user_obj,
                       'user': user['name'],
                       'api_version': 3}
+    from dcor_shared.testing import make_dataset
     dataset = make_dataset(create_context,
                            owner_org,
                            activate=False)
@@ -206,6 +208,7 @@ def test_cli_migrate_to_object_store_with_verify_checksum(
                       'auth_user_obj': user_obj,
                       'user': user['name'],
                       'api_version': 3}
+    from dcor_shared.testing import make_dataset
     dataset = make_dataset(create_context,
                            owner_org,
                            activate=False)

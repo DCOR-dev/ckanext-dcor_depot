@@ -19,7 +19,7 @@ from ckan.tests import helpers
 
 import dcor_shared
 
-from dcor_shared.testing import make_dataset, synchronous_enqueue_job
+from dcor_shared.testing import synchronous_enqueue_job
 
 
 data_path = pathlib.Path(__file__).parent / "data"
@@ -47,6 +47,7 @@ def test_migrate_to_s3_public_dataset(enqueue_job_mock, create_with_upload,
     create_context = {'ignore_auth': False,
                       'user': user['name'],
                       'api_version': 3}
+    from dcor_shared.testing import make_dataset
     ds_dict, rs_dict = make_dataset(
         create_context,
         owner_org,
@@ -89,6 +90,7 @@ def test_migrate_to_s3_private_dataset(enqueue_job_mock, create_with_upload,
     create_context = {'ignore_auth': False,
                       'user': user['name'],
                       'api_version': 3}
+    from dcor_shared.testing import make_dataset
     ds_dict, rs_dict = make_dataset(
         create_context,
         owner_org,
