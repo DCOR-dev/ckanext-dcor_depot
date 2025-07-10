@@ -182,8 +182,8 @@ def dcor_migrate_resources_to_object_store(modified_days=-1,
                         else:
                             # Only ever delete when upload succeeds
                             if delete_after_migration:
-                                pathlib.Path(local_path).unlink()
                                 path_res = pathlib.Path(local_path).resolve()
+                                pathlib.Path(local_path).unlink()
                                 if path_res.exists():
                                     path_res.unlink()
 

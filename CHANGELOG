@@ -1,3 +1,5 @@
+1.0.1
+ - fix: resolve depot resource paths before removing symlinks in S3 migration
 1.0.0
  - declare first stable release
  - ref: remove deprecated `sha_256`
