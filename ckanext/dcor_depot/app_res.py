@@ -46,8 +46,11 @@ def append_ckan_resource_to_active_dataset(dataset_id, res_dict):
         )
 
 
-def append_resource(path, dataset_id, delete_source=False):
+def append_resource(path: pathlib.Path | str,
+                    dataset_id: str,
+                    delete_source: bool = False):
     """Upload a resource to S3 and append to an existing dataset"""
+    path = pathlib.Path(path)
     package_show = logic.get_action("package_show")
     ds_dict = package_show(context=admin_context(),
                            data_dict={"id": dataset_id})
@@ -72,14 +75,17 @@ def append_resource(path, dataset_id, delete_source=False):
     )
 
     # Append the resource to the CKAN dataset entry
-    append_ckan_resource_to_active_dataset(dataset_id=ds_dict["id"],
-                                           res_dict={"id": rid,
-                                                     "name": path.name,
-                                                     "s3_available": True,
-                                                     "s3_url": s3_url,
-                                                     })
+    append_ckan_resource_to_active_dataset(
+        dataset_id=ds_dict["id"],
+        res_dict={"id": rid,
+                  "name": path.name,
+                  "s3_available": True,
+                  "s3_url": s3_url,
+                  "size": path.stat().st_size,
+                  "url_type": "s3_upload",
+                  })
 
     # If we got here without any exceptions, then it is safe to
     # delete the input path.
     if delete_source:
-        pathlib.Path(path).unlink()
+        path.unlink()
