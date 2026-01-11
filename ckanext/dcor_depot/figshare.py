@@ -1,5 +1,7 @@
 """Import predefined datasets from figshare.com"""
 import hashlib
+import json
+import urllib.request
 import pathlib
 import pkg_resources
 import tempfile
@@ -78,16 +80,46 @@ def figshare(limit=0):
         import_dataset(doi)
 
 
+
 def import_dataset(doi):
     # Convert DOI to url
     uid = doi.split(".")[-2]
     ver = doi.split(".")[-1].strip("v ")
     url = f"{FIGSHARE_BASE}/articles/{uid}/versions/{ver}"
     # Get the JSON representation of the metadata
-    req = requests.get(url)
-    if not req.ok:
-        raise ConnectionError(f"Error accessing {url}: {req.reason}")
-    figshare_dict = req.json()
+    headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; "
+                      "rv:146.0) Gecko/20100101 Firefox/146.0",
+        "Accept": "text/html,application/xhtml+xml,application/xml;"
+                  "q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "same-origin",
+        "Priority": "u=0, i",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "TE": "trailers",
+    }
+    # This did not work due to scraping detection on figshare
+    # req = requests.get(url, headers=headers)
+    # if not req.ok:
+    #     raise ConnectionError(f"Error accessing {url}: {req.reason}")
+    # figshare_dict = req.json()
+
+    req = urllib.request.Request(url)
+    for k, v in headers.items():
+        req.add_header(k, v)
+    r = urllib.request.urlopen(req)
+    if not r.status == 200:
+        raise ConnectionError(f"Error accessing {url}: {r.reason}")
+    data = r.read().decode("utf-8")
+
+    figshare_dict = json.loads(data)
     # Convert the dictionary to DCOR and create draft
     ds_dict_figshare = map_figshare_to_dcor(figshare_dict)
 
