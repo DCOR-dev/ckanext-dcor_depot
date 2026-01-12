@@ -81,7 +81,6 @@ def figshare(limit=0):
         import_dataset(doi)
 
 
-
 def import_dataset(doi):
     # Convert DOI to url
     uid = doi.split(".")[-2]
