@@ -49,6 +49,7 @@ def download_file(url, path, ret_sha256=False):
     else:
         hasher = None
     path = pathlib.Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         with path.open('wb') as fd:
@@ -166,7 +167,7 @@ def import_dataset(doi):
             else:
                 # download to and/or verify on disk
                 print(f"Downloading {res['name']}...")
-                dlpath = pathlib.Path(cache_loc) / res["name"]
+                dlpath = pathlib.Path(cache_loc) / doi / res["name"]
                 sha256 = download_file(res["download_url"], dlpath,
                                        ret_sha256=True)
                 check_md5(dlpath, res["supplied_md5"])
