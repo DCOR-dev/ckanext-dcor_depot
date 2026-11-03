@@ -1,9 +1,9 @@
 """Import predefined datasets from figshare.com"""
 import hashlib
+from importlib import resources as importlib_resources
 import json
 import urllib.request
 import pathlib
-import pkg_resources
 import tempfile
 
 from ckan import common, logic
@@ -67,11 +67,11 @@ def figshare(limit=0):
     """Import all datasets in figshare_links.txt"""
     # prerequisites
     create_figshare_org()
-    # use pkg_resources to get list of figshare DOIs
-    doifile = pkg_resources.resource_filename("ckanext.dcor_depot",
-                                              "figshare_dois.txt")
+    # get list of figshare DOIs
+    doifile = (importlib_resources.files("ckanext.dcor_depot")
+               / "figshare_dois.txt")
     # import datasets
-    with open(doifile, "r") as fd:
+    with doifile.open("r") as fd:
         dois = [f.strip() for f in fd.readlines() if f.strip()]
 
     if limit != 0:
