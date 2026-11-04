@@ -1,3 +1,7 @@
+1.1.1
+ - fix: use the actual site user instead of the user "default" in
+   `dcor-list-s3-objects-for-dataset`
+ - ref: remove unused `cli.click_echo`
 1.1.0
  - BREAKING: remove the background job that migrated resources
    uploaded via the legacy upload route to S3 and the corresponding
