@@ -7,7 +7,9 @@ from .util import make_id
 
 
 def admin_context():
-    return {'ignore_auth': True, 'user': 'default'}
+    """Context of the site user (sysadmin), which may e.g. set dataset IDs"""
+    site_user = logic.get_action("get_site_user")({"ignore_auth": True}, {})
+    return {'ignore_auth': True, 'user': site_user["name"]}
 
 
 def append_ckan_resource_to_active_dataset(dataset_id, res_dict):

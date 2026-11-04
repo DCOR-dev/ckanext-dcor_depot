@@ -5,8 +5,13 @@
  - BREAKING: remove the CLI `dcor-migrate-resources-to-object-store`
    for migrating data from block storage to S3 (DCOR-Aid uploads
    directly to S3)
+ - fix: use the actual site user instead of the user "default" for
+   administrative actions (figshare import failed if `ckan.site_id`
+   was not "default")
  - ref: remove the `jobs` submodule (`get_resource_path` was only used
    by the removed migration code)
+ - tests: add tests for the remaining CLI commands, `append_resource`,
+   the helper functions, and the figshare import (mocked)
 1.0.6
  - fix: compatibility with setuptools>=82 (no `pkg_resources`),
    which is shipped with CKAN 2.11.6
