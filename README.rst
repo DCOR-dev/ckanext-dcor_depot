@@ -14,10 +14,6 @@ files in DCOR:
 
 This plugin implements:
 
-- A background job that uploads resources to S3 in `after_resource_create`
-  if the resources were previously uploaded via the legacy upload route.
-  This functionality is interesting for legacy setups that are not using
-  S3 object storage by default.
 - Import datasets from figshare. Existing datasets on figshare are
   parsed, datasets are created and resources uploaded to S3 object storage.
   When running the following command, the "figshare-import" organization
@@ -26,13 +22,6 @@ This plugin implements:
   ::
 
      ckan dcor-import-figshare --limit 2
-
-
-- CLI for running all background jobs (migration to S3):
-
-  ::
-
-     ckan run-jobs-dcor-depot
 
 
 - CLI for appending a resource to a dataset

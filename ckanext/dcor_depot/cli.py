@@ -257,49 +257,6 @@ def list_all_resources():
             click.echo(resource.id)
 
 
-# TODO: Remove this method (it should not be used in current workflows)
-@click.command()
-@click.option('--modified-days', default=-1,
-              help='Only run for datasets modified within this number of days '
-                   + 'in the past. Set to -1 to apply to all datasets.')
-def run_jobs_dcor_depot(modified_days=-1):
-    """Run all jobs of the dcor_depot extension
-
-    This also happens for draft datasets.
-    """
-    # go through all datasets
-    datasets = model.Session.query(model.Package)
-
-    if modified_days >= 0:
-        # Search only the last `days` days.
-        past = datetime.date.today() - datetime.timedelta(days=modified_days)
-        past_str = time.strftime("%Y-%m-%d", past.timetuple())
-        datasets = datasets.filter(model.Package.metadata_modified >= past_str)
-
-    nl = False  # new line character
-    for dataset in datasets:
-        nl = False
-        click.echo(f"Checking dataset {dataset.id}\r", nl=False)
-        ds_dict = dataset.as_dict()
-        ds_dict["organization"] = logic.get_action("organization_show")(
-                {'ignore_auth': True}, {"id": dataset.owner_org})
-        for resource in dataset.resources:
-            res_dict = resource.as_dict()
-            try:
-                if jobs.job_migrate_resource_to_s3(resource=res_dict):
-                    click_echo(f"Migrated to S3 {resource.name}", nl)
-                    nl = True
-            except KeyboardInterrupt:
-                raise
-            except BaseException as e:
-                click_echo(
-                    f"{e.__class__.__name__}: {e} for {resource.name}", nl)
-                nl = True
-    if not nl:
-        click.echo("")
-    click.echo("Done!")
-
-
 def get_commands():
     return [append_resource,
             dcor_import_figshare,
@@ -307,5 +264,4 @@ def get_commands():
             dcor_migrate_resources_to_object_store,
             dcor_prune_stale_multipart_uploads,
             list_all_resources,
-            run_jobs_dcor_depot,
             ]
