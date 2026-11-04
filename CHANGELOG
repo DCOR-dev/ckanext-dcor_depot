@@ -1,4 +1,7 @@
 1.1.0
+ - fix: use the actual site user instead of the user "default" for
+   administrative actions (figshare import failed if `ckan.site_id`
+   was not "default")
  - BREAKING: remove the background job that migrated resources
    uploaded via the legacy upload route to S3 and the corresponding
    CLI `run-jobs-dcor-depot` (DCOR-Aid uploads directly to S3)
