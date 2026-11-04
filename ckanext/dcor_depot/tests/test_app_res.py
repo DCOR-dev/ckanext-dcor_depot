@@ -1,3 +1,4 @@
+import pathlib
 from unittest import mock
 
 import pytest
@@ -11,6 +12,9 @@ from dcor_shared.testing import make_dataset_via_s3, synchronous_enqueue_job
 from ckanext.dcor_depot import app_res
 
 
+data_path = pathlib.Path(__file__).parent / "data"
+
+
 def test_append_ckan_resource_requires_name_and_id():
     with pytest.raises(ValueError, match="You must provide 'id'"):
         app_res.append_ckan_resource_to_active_dataset(
@@ -22,9 +26,9 @@ def test_append_ckan_resource_requires_name_and_id():
 @mock.patch('ckan.plugins.toolkit.enqueue_job',
             side_effect=synchronous_enqueue_job)
 def test_cli_append_resource(enqueue_job_mock, cli, tmp_path):
-    path1 = tmp_path / "first.txt"
-    path1.write_text("first resource")
-    ds_dict, _ = make_dataset_via_s3(resource_path=path1, activate=True)
+    ds_dict, _ = make_dataset_via_s3(
+        resource_path=data_path / "calibration_beads_47.rtdc",
+        activate=True)
 
     path2 = tmp_path / "second.txt"
     path2.write_text("second resource")

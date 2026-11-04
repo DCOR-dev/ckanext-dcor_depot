@@ -2,6 +2,7 @@
 import hashlib
 import io
 import json
+import pathlib
 from unittest import mock
 
 import pytest
@@ -11,10 +12,15 @@ from ckan.tests import helpers
 
 from dcor_shared.testing import synchronous_enqueue_job
 
+import requests
+
 from ckanext.dcor_depot import figshare
 
 
-FILE_DATA = b"This is the content of the README file."
+data_path = pathlib.Path(__file__).parent / "data"
+FILE_DATA = (data_path / "calibration_beads_47.rtdc").read_bytes()
+FILE_URL = "https://example.com/download/calibration_beads.rtdc"
+requests_get = requests.get
 
 
 def make_figshare_dict(license_name="CC0"):
@@ -32,9 +38,9 @@ def make_figshare_dict(license_name="CC0"):
                        "10.1000/xyz123"],
         "files": [
             {"is_link_only": False,
-             "name": "README.txt",
+             "name": "calibration_beads.rtdc",
              "supplied_md5": hashlib.md5(FILE_DATA).hexdigest(),
-             "download_url": "https://example.com/download/README.txt",
+             "download_url": FILE_URL,
              },
             {"is_link_only": True,
              "name": "link_only.rtdc",
@@ -70,8 +76,11 @@ def mock_urlopen(request):
     return resp
 
 
-def mock_requests_get(url, stream=False):
-    """Return the file download response for a request"""
+def mock_requests_get(url, *args, **kwargs):
+    """Return the file download response for the figshare file"""
+    if url != FILE_URL:
+        # e.g. requests to S3 by other extensions
+        return requests_get(url, *args, **kwargs)
     resp = mock.MagicMock()
     resp.__enter__.return_value = resp
     resp.iter_content.return_value = [FILE_DATA]
@@ -90,18 +99,20 @@ def test_import_figshare(urlopen_mock, get_mock, enqueue_job_mock, cli):
     result = cli.invoke(ckan_cli, ["dcor-import-figshare", "--limit", "1"])
     assert result.exit_code == 0, result.output
     assert urlopen_mock.call_count == 1
-    assert get_mock.call_count == 1
+    assert get_mock.call_args_list.count(
+        mock.call(FILE_URL, stream=True)) == 1
 
     ds_dict = helpers.call_action("package_show", id="figshare-7771184-v2")
     assert ds_dict["state"] == "active"
     assert ds_dict["organization"]["name"] == figshare.FIGSHARE_ORG
     # the link-only file is not imported
     assert len(ds_dict["resources"]) == 1
-    assert ds_dict["resources"][0]["name"] == "README.txt"
+    assert ds_dict["resources"][0]["name"] == "calibration_beads.rtdc"
     assert ds_dict["resources"][0]["s3_available"]
 
     # A second import does not download anything
     result = cli.invoke(ckan_cli, ["dcor-import-figshare", "--limit", "1"])
     assert result.exit_code == 0, result.output
     assert "already on S3" in result.output
-    assert get_mock.call_count == 1
+    assert get_mock.call_args_list.count(
+        mock.call(FILE_URL, stream=True)) == 1
