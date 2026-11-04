@@ -2,6 +2,11 @@
  - BREAKING: remove the background job that migrated resources
    uploaded via the legacy upload route to S3 and the corresponding
    CLI `run-jobs-dcor-depot` (DCOR-Aid uploads directly to S3)
+ - BREAKING: remove the CLI `dcor-migrate-resources-to-object-store`
+   for migrating data from block storage to S3 (DCOR-Aid uploads
+   directly to S3)
+ - ref: remove the `jobs` submodule (`get_resource_path` was only used
+   by the removed migration code)
 1.0.6
  - fix: compatibility with setuptools>=82 (no `pkg_resources`),
    which is shipped with CKAN 2.11.6

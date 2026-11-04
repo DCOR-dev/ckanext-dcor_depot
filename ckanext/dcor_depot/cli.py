@@ -1,19 +1,13 @@
-import datetime
 import pathlib
-import time
-import traceback as tb
 
 import ckan.logic as logic
 import ckan.model as model
 import click
 
-from dcor_shared import (
-    DC_MIME_TYPES, s3, s3cc, get_resource_info, sha256sum
-)
+from dcor_shared import DC_MIME_TYPES, s3, s3cc
 
 from . import app_res
 from .figshare import figshare
-from . import jobs
 
 
 def click_echo(message, am_on_a_new_line):
@@ -99,120 +93,6 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
             click.secho(f"{bucket_name}:{pp} ({message})", fg=color)
 
 
-@click.command()
-@click.option("--modified-days", default=-1,
-              help="Only migrate datasets modified within this number of days "
-                   + "in the past. Set to -1 to apply to all datasets.")
-@click.option("--delete-after-migration", is_flag=True,
-              help="Delete files from local block storage after successful "
-                   "transfer to object storage.")
-@click.option("--verify-existence", is_flag=True,
-              help="Verify that resources exist in S3")
-@click.option("--verify-checksum", is_flag=True,
-              help="Verify the checksum of the file in S3; this option "
-                   "implies --verify-existence")
-def dcor_migrate_resources_to_object_store(modified_days=-1,
-                                           delete_after_migration=False,
-                                           verify_existence=False,
-                                           verify_checksum=False,
-                                           ):
-    """Migrate resources on block storage to an S3-compatible object store
-
-    This also happens for draft datasets.
-    """
-    # verify_checksum implies verify_existence [sic]
-    verify_existence = verify_existence or verify_checksum
-    # go through all datasets
-    datasets = model.Session.query(model.Package)
-
-    if modified_days >= 0:
-        # Search only the last `days` days.
-        past = datetime.date.today() - datetime.timedelta(days=modified_days)
-        past_str = time.strftime("%Y-%m-%d", past.timetuple())
-        datasets = datasets.filter(model.Package.metadata_modified >= past_str)
-
-    nl = False
-    for dataset in datasets:
-        nl = False
-        click.echo(f"Migrating dataset {dataset.id}\r", nl=False)
-        for resource in dataset.resources:
-            rid = resource.id
-            ds_dict, res_dict = get_resource_info(rid)
-            rid = res_dict["id"]
-            res_loc = str(jobs.get_resource_path(rid))
-            for artifact, suffix, obj_sha in [
-                ("resource", "", res_dict.get("sha256")),
-                ("preview", "_preview.jpg", None),
-                    ("condensed", "_condensed.rtdc", None)]:
-                if not res_dict.get("s3_available", False) or verify_existence:
-                    local_path = res_loc + suffix
-                    # Only continue if the local file exists
-                    if pathlib.Path(local_path).exists():
-                        # compute sha256sum if not available
-                        obj_sha = obj_sha or sha256sum(local_path)
-                        override = False  # no override by default
-
-                        if verify_checksum and s3cc.artifact_exists(
-                                rid, artifact=artifact):
-                            s3_sha256 = s3cc.compute_checksum(
-                                rid, artifact=artifact)
-                            if s3_sha256 != obj_sha:
-                                # Override only if the user requested it and
-                                # only if the SHA256 sum did not match.
-                                override = True
-                        try:
-                            s3_url = s3cc.upload_artifact(
-                                resource_id=rid,
-                                path_artifact=local_path,
-                                artifact=artifact,
-                                sha256=obj_sha,
-                                private=ds_dict["private"],
-                                override=override,
-                            )
-                            if verify_checksum:
-                                click_echo(f"Verified {artifact} {rid}", nl)
-                            elif verify_existence:
-                                click_echo(f"Checked {artifact} {rid}", nl)
-                            else:
-                                click_echo(f"Uploaded {artifact} {rid}", nl)
-                            nl = True
-                        except FileNotFoundError:
-                            click_echo(f"Missing file {local_path}", nl)
-                            nl = True
-                        else:
-                            # Only ever delete when upload succeeds
-                            if delete_after_migration:
-                                path_res = pathlib.Path(local_path).resolve()
-                                pathlib.Path(local_path).unlink()
-                                if path_res.exists():
-                                    path_res.unlink()
-
-                            # Check if the s3 URLs have been set
-                            if (artifact == "resource"
-                                and ("s3_available" not in res_dict
-                                     or "s3_url" not in res_dict)):
-                                try:
-                                    # Update the resource dictionary
-                                    logic.get_action("resource_patch")(
-                                        context={
-                                            # https://github.com/ckan/
-                                            # ckan/issues/7787
-                                            "user": ds_dict["creator_user_id"],
-                                            "ignore_auth": True},
-                                        data_dict={"id": rid,
-                                                   "s3_available": True,
-                                                   "s3_url": s3_url})
-                                except BaseException:
-                                    click_echo(
-                                        f"Failed resource {resource.name}", nl)
-                                    nl = True
-                                    click_echo(tb.format_exc(), nl)
-
-    if not nl:
-        click.echo("")
-    click.echo("Done!")
-
-
 @click.option('--initiated-before-days', default=5,
               help='Only prune multipart uploads that were initiated '
                    + 'before a given number of days (set to -1 to prune all)')
@@ -261,7 +141,6 @@ def get_commands():
     return [append_resource,
             dcor_import_figshare,
             dcor_list_s3_objects_for_dataset,
-            dcor_migrate_resources_to_object_store,
             dcor_prune_stale_multipart_uploads,
             list_all_resources,
             ]
