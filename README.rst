@@ -32,22 +32,6 @@ This plugin implements:
 
 
 
-- CLI for migrating data from block storage to an S3-compatible object storage
-  service. For this, the following configuration keys must be specified in
-  the ``ckan.ini`` file::
-
-    dcor_object_store.access_key_id = ACCESS_KEY_ID
-    dcor_object_store.secret_access_key = SECRET_ACCESS_KEY
-    dcor_object_store.endpoint_url = S3_ENDPOINT_URL
-    dcor_object_store.ssl_verify = true
-    # The bucket name is by default defined by the circle ID. Resources
-    # are stored in the "RES/OUR/CEID-SCHEME" in that bucket.
-    dcor_object_store.bucket_name = circle-{organization_id}
-
-  Usage::
-
-    ckan dcor-migrate-resources-to-object-store --modified-days 2 --delete-after-migration --verify-checksum
-
 - CLI for listing all S3 objects for a dataset::
 
     ckan dcor-list-s3-objects-for-dataset c7a98a04-4e0a-98a7-fb0b-eca379d1f219
@@ -59,6 +43,16 @@ This plugin implements:
 - CLI for pruning stale multipart uploads::
 
     ckan dcor-prune-stale-multipart-uploads --initiated-before-days 5 --dry-run
+
+The S3-compatible object storage is configured in the ``ckan.ini`` file::
+
+    dcor_object_store.access_key_id = ACCESS_KEY_ID
+    dcor_object_store.secret_access_key = SECRET_ACCESS_KEY
+    dcor_object_store.endpoint_url = S3_ENDPOINT_URL
+    dcor_object_store.ssl_verify = true
+    # The bucket name is by default defined by the circle ID. Resources
+    # are stored in the "RES/OUR/CEID-SCHEME" in that bucket.
+    dcor_object_store.bucket_name = circle-{organization_id}
 
 
 Installation
