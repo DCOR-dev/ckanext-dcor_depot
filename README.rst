@@ -28,13 +28,6 @@ This plugin implements:
      ckan dcor-import-figshare --limit 2
 
 
-- CLI for running all background jobs (migration to S3):
-
-  ::
-
-     ckan run-jobs-dcor-depot
-
-
 - CLI for appending a resource to a dataset
 
   ::

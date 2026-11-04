@@ -1,3 +1,7 @@
+1.1.0
+ - BREAKING: remove the background job that migrated resources
+   uploaded via the legacy upload route to S3 and the corresponding
+   CLI `run-jobs-dcor-depot` (DCOR-Aid uploads directly to S3)
 1.0.6
  - fix: compatibility with setuptools>=82 (no `pkg_resources`),
    which is shipped with CKAN 2.11.6
