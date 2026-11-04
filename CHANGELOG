@@ -7,6 +7,8 @@
    directly to S3)
  - ref: remove the `jobs` submodule (`get_resource_path` was only used
    by the removed migration code)
+ - tests: add tests for the remaining CLI commands, `append_resource`,
+   the helper functions, and the figshare import (mocked)
 1.0.6
  - fix: compatibility with setuptools>=82 (no `pkg_resources`),
    which is shipped with CKAN 2.11.6
