@@ -10,12 +10,6 @@ from . import app_res
 from .figshare import figshare
 
 
-def click_echo(message, am_on_a_new_line):
-    if not am_on_a_new_line:
-        click.echo("")
-    click.echo(message)
-
-
 @click.command()
 @click.argument('path')
 @click.argument('dataset_id')
@@ -54,8 +48,7 @@ def dcor_list_s3_objects_for_dataset(dataset_id):
     private (blue), or not there (red).
     """
     package_show = logic.get_action("package_show")
-    dataset_dict = package_show(context={'ignore_auth': True,
-                                         'user': 'default'},
+    dataset_dict = package_show(context=app_res.admin_context(),
                                 data_dict={"id": dataset_id})
     # For each resource, list the objects that are currently in S3 along
     # with the S3 object tags.
