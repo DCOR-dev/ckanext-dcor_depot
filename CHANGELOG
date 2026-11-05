@@ -1,3 +1,5 @@
+1.1.2
+ - tests: use Redis 7 in CI (CKAN 2.12 requires Redis >= 6)
 1.1.1
  - fix: use the actual site user instead of the user "default" in
    `dcor-list-s3-objects-for-dataset`
